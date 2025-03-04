@@ -19,9 +19,7 @@ IR_PIN = 17 # Board=11, BCM=17
 def main():
     
     def interrupt_signal_handler(signum, frame):
-        print('Interrupt signal ' + str(signum) +
-                      ' on line ' + str(frame.f_lineno) +
-                      ' in ' + frame.f_code.co_filename)
+        print("Exiting...")
         pi.stop()
         sys.exit(0)
 
@@ -35,18 +33,17 @@ def main():
                 if reassign != "y":
                     idle()
                     return
-            key = input("Enter the button name for the captured IR code (or type 'skip' to skip): ").strip()
-            if key.lower() != "skip":
-                if model in ir_dict:
-                    btn_dict = ir_dict[model]
-                else:
-                    btn_dict = {}
-                btn_dict[key] = {ir_decoded, ir_hex}
-                ir_dict[model] = btn_dict
-                os.makedirs(config_folder, exist_ok=True)  # Ensure the directory exists
-                with open(filepath, "w") as f:
-                    f.write(str(ir_dict[model]))
-                print(f"Button '{key}' saved successfully.")
+            key = input("Enter the button name for the captured IR code: ").strip()
+            if model in ir_dict:
+                btn_dict = ir_dict[model]
+            else:
+                btn_dict = {}
+            btn_dict[key] = {ir_decoded, ir_hex}
+            ir_dict[model] = btn_dict
+            os.makedirs(config_folder, exist_ok=True)  # Ensure the directory exists
+            with open(filepath, "w") as f:
+                f.write(str(ir_dict[model]))
+            print(f"Button '{key}' saved successfully.")
         idle()
  
     def idle():
