@@ -1,1 +1,3 @@
 # PiLite
+
+pip install pyserial
