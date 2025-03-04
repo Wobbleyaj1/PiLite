@@ -29,8 +29,8 @@ def main():
         print("ir_decoded={} len={}".format(ir_decoded, len(ir_decoded)))
         print("ir_dec_hex={}".format(ir_hex))
         if valid:
-            print("Valid IR code (remote model \"{}\") captured @ {} \n".format(model, datetime.datetime.now()))
-            filepath = os.path.join(config_folder, "ir_code_" + str(model) + ".txt")
+            print("Valid IR code (remote model \"{}\") captured @ {} \n".format(model,datetime.datetime.now()))
+            filepath = config_folder+"ir_code_"+str(model)+".txt"
             if track:
                 key = input("Enter key ID for this code: [\"skip\" to skip] ")
                 if key != "skip":
