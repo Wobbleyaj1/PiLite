@@ -65,7 +65,7 @@ def main():
                     return
             
             key = input("Enter the button name for the captured IR code: ").strip()
-            btn_dict[key] = {ir_decoded, ir_hex}
+            btn_dict[key] = ir_hex
             ir_dict[model] = btn_dict
             
             os.makedirs(config_folder, exist_ok=True)  # Ensure the directory exists
