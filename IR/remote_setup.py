@@ -19,6 +19,7 @@ IR_PIN = 17 # Board=11, BCM=17
 def main():
     
     def interrupt_signal_handler(signum, frame):
+        print("\nSaved")
         print("Exiting...")
         pi.stop()
         sys.exit(0)
@@ -47,7 +48,7 @@ def main():
         idle()
  
     def idle():
-        print("\nWaiting for IR signal... (Press Ctrl+C to exit)\n")
+        print("\nWaiting for IR signal... (Press Ctrl+C to save and exit)\n")
     
     # Setup tracking and logging
     config_folder = "./config/"
