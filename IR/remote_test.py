@@ -37,7 +37,7 @@ class IRRemote:
             time.sleep(1)  # Keep the script running to receive IR signals
 
 def main():
-    ir_remote = IRRemote(pin=17, ir_code_file="../config/ir_code_ff.txt")
+    ir_remote = IRRemote(pin=17, ir_code_file="/config/ir_code_ff.txt")
     ir_remote.read_ir_code()
 
 if __name__ == "__main__":
