@@ -1,34 +1,21 @@
-import serial
+import RPi.GPIO as GPIO
 import time
+import lirc
 
-class HX1838Remote:
-    def __init__(self, port="/dev/ttyAMA0", baudrate=2400):
-        self.ser = serial.Serial(port, baudrate)
-        self.callback = None
+# Initialize the GPIO and lirc
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(17, GPIO.IN)  # Replace 17 with the GPIO pin you are using
 
-    def set_callback(self, callback):
-        self.callback = callback
+sockid = lirc.init("myremote", blocking=False)
 
-    def _read_signal(self):
-        while True:
-            data = self.ser.read(1)
-            if self.callback:
-                self.callback(ord(data))
-
-    def start(self):
-        try:
-            self._read_signal()
-        except KeyboardInterrupt:
-            self.cleanup()
-
-    def cleanup(self):
-        self.ser.close()
-
-# Example usage
-if __name__ == "__main__":
-    def print_signal(signal):
-        print(f"Received signal: {signal}")
-
-    remote = HX1838Remote()
-    remote.set_callback(print_signal)
-    remote.start()
+try:
+    while True:
+        code = lirc.nextcode()
+        if code:
+            print(f"Received code: {code}")
+        time.sleep(0.1)
+except KeyboardInterrupt:
+    pass
+finally:
+    lirc.deinit()
+    GPIO.cleanup()
