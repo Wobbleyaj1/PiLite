@@ -52,6 +52,6 @@ if __name__ == "__main__":
         title="Test title",                  # The title of the message
         icon="1",                            # The icon number
         sound="1",                           # The sound number
-        vibration="1",                       # The vibration number
+        vibration="3",                       # The vibration number
         picture=""                           # The picture data URL (optional)
     )
