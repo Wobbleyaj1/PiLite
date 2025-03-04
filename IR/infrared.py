@@ -9,7 +9,7 @@
 import pigpio
 import sys
 import os
-import ir_format as ir_format
+import IR.ir_format as ir_format
 
 class rx:
     """

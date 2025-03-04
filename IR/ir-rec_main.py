@@ -9,11 +9,11 @@
 import sys
 import os
 sys.path.append(os.path.abspath(".."))
-from load_ir_file import parse_ir_to_dict, find_key
+from IR.load_ir_file import parse_ir_to_dict, find_key
 import datetime
 import signal
 import pigpio
-import infrared
+import IR.infrared as infrared
 
 IR_PIN = 17 # Board=11, BCM=17
 
