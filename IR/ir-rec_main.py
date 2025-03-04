@@ -8,7 +8,6 @@
 # HW: Pi Model 3B  V1.2, IR kit: Rx sensor module HX1838, Tx = IR remote(s)
 import sys
 import os
-sys.path.append(os.path.abspath(".."))
 from load_ir_file import parse_ir_to_dict, find_key
 import datetime
 import signal
@@ -62,7 +61,7 @@ def main():
     
     # Setup tracking and logging
     print("IR Rx @ {}: Setup Started".format(IR_PIN))
-    config_folder="../config/"
+    config_folder="/config/"
     track = (lambda x: x == 'y' or x == 'Y')(input("IR Rx @ {}: Turn tracking on? [y/n] ".format(IR_PIN)))
     #print("IR Rx @ {}: Tracking on: {}".format(IR_PIN, track))
     log = False
