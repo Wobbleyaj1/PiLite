@@ -8,8 +8,6 @@
 # HW: Pi Model 3B  V1.2, IR kit: Rx sensor module HX1838, Tx = IR remote(s)
 
 import pigpio
-import sys
-import os
 
 # IR Format
 header = {'NEC':[9000,4500], 'Yamaha':[9067,4393]}
