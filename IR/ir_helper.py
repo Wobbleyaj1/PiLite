@@ -46,7 +46,14 @@ def parse_ir_to_dict(ir_model_rd):
     ir_model_rd = [[y.split(",") for y in x] for x in ir_model_rd]
     btn_dict = {}
     for item in ir_model_rd:
-        btn_dict[item[0][0]] = {item[1][0], item[1][1]}
+        if len(item) < 2 or len(item[0]) < 1 or len(item[1]) < 2:
+            print(f"Skipping invalid item: {item}")
+            continue
+        try:
+            btn_dict[item[0][0]] = {item[1][0], item[1][1]}
+        except IndexError as e:
+            print(f"Error processing item: {item}")
+            print(f"Exception: {e}")
     return btn_dict
 
 def find_key(btn_dict, value):
