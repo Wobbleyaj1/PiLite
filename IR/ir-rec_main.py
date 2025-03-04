@@ -42,18 +42,18 @@ def main():
                     ir_dict[model] = btn_dict
                     print(ir_dict)
                     if log:
-                        os.makedirs(config_folder, exist_ok=True)  # Ensure the directory exists
-                        with open(filepath, "w") as f:
-                            f.write(str(ir_dict[model]))
+                        f = open(filepath, "w")
+                        f.write(str(ir_dict[model]))
+                        f.close()
                         print("IR code dictionary written to file: {}\n".format(filepath))
             else:
                 if os.path.exists(filepath):
-                    with open(filepath, "r") as f:
-                        ir_model_rd = f.read()
+                    f = open(filepath, "r")
+                    ir_model_rd = f.read()
+                    f.close()
                     btn_dict = parse_ir_to_dict(ir_model_rd)
                     print("Key decoded: {}".format(find_key(btn_dict, ir_hex)))
-                else:
-                    print("IR code dictionary file not found. Turn on logging to create it.")
+                else: print("IR code dictionary file not found. Turn on logging to create it.")
         idle()
  
     def idle():
