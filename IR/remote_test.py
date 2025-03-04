@@ -17,13 +17,13 @@ class IRRemote:
         self.ir_receiver = rx(self.pi, self.pin, self.ir_rx_callback, track=False, log=False)
 
     def load_ir_codes(self):
-        if os.path.exists(self.ir_code_file):
-            with open(self.ir_code_file, "r") as f:
-                ir_model_rd = f.read()
-            return parse_ir_to_dict(ir_model_rd)
-        else:
+        if not os.path.exists(self.ir_code_file):
             print("IR code dictionary file not found.")
             return {}
+        
+        with open(self.ir_code_file, "r") as f:
+            ir_model_rd = f.read()
+        return parse_ir_to_dict(ir_model_rd)
 
     def ir_rx_callback(self, ir_decoded, ir_hex, model, valid, track, log, config_folder):
         if valid:
