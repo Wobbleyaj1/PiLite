@@ -29,8 +29,8 @@ def main():
         print("ir_decoded={} len={}".format(ir_decoded, len(ir_decoded)))
         print("ir_dec_hex={}".format(ir_hex))
         if valid:
-            print("Valid IR code (remote model \"{}\") captured @ {} \n".format(model,datetime.datetime.now()))
-            filepath = config_folder+"ir_code_"+str(model)+".txt"
+            print("Valid IR code (remote model \"{}\") captured @ {} \n".format(model, datetime.datetime.now()))
+            filepath = os.path.join(config_folder, "ir_code_" + str(model) + ".txt")
             if track:
                 key = input("Enter key ID for this code: [\"skip\" to skip] ")
                 if key != "skip":
@@ -42,18 +42,18 @@ def main():
                     ir_dict[model] = btn_dict
                     print(ir_dict)
                     if log:
-                        f = open(filepath, "w")
-                        f.write(str(ir_dict[model]))
-                        f.close()
+                        os.makedirs(config_folder, exist_ok=True)  # Ensure the directory exists
+                        with open(filepath, "w") as f:
+                            f.write(str(ir_dict[model]))
                         print("IR code dictionary written to file: {}\n".format(filepath))
             else:
                 if os.path.exists(filepath):
-                    f = open(filepath, "r")
-                    ir_model_rd = f.read()
-                    f.close()
+                    with open(filepath, "r") as f:
+                        ir_model_rd = f.read()
                     btn_dict = parse_ir_to_dict(ir_model_rd)
                     print("Key decoded: {}".format(find_key(btn_dict, ir_hex)))
-                else: print("IR code dictionary file not found. Turn on logging to create it.")
+                else:
+                    print("IR code dictionary file not found. Turn on logging to create it.")
         idle()
  
     def idle():
@@ -61,7 +61,7 @@ def main():
     
     # Setup tracking and logging
     print("IR Rx @ {}: Setup Started".format(IR_PIN))
-    config_folder="/config/"
+    config_folder="./config/"
     track = (lambda x: x == 'y' or x == 'Y')(input("IR Rx @ {}: Turn tracking on? [y/n] ".format(IR_PIN)))
     #print("IR Rx @ {}: Tracking on: {}".format(IR_PIN, track))
     log = False
