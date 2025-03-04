@@ -6,24 +6,47 @@
 # Repo: https://github.com/Wobbleyaj1/PiLite.git
 # SW: Python 3.7.3
 # HW: Pi Model 3B  V1.2, IR kit: Rx sensor module HX1838, Tx = IR remote(s)
+
 import sys
 import os
-from load_ir_file import parse_ir_to_dict, find_key
 import signal
 import pigpio
-from ir_helper import parse_ir_to_dict, find_key
+from ir_helper import parse_ir_to_dict, find_key, rx
 
+# Define the GPIO pin for the IR receiver
 IR_PIN = 17 # Board=11, BCM=17
 
 def main():
+    """
+    Main function to set up the IR receiver and handle incoming IR signals.
+    """
     
     def interrupt_signal_handler(signum, frame):
+        """
+        Handle the interrupt signal (Ctrl+C) to save data and exit gracefully.
+        
+        Args:
+            signum (int): Signal number.
+            frame (frame object): Current stack frame.
+        """
         print("\nSaved")
         print("Exiting...")
         pi.stop()
         sys.exit(0)
 
     def ir_rx_callback(ir_decoded, ir_hex, model, valid, track, log, config_folder):
+        """
+        Callback function to handle received IR signals.
+        
+        Args:
+            ir_decoded (str): Decoded IR signal.
+            ir_hex (str): Hexadecimal representation of the IR signal.
+            model (str): IR remote model.
+            valid (bool): Whether the IR signal is valid.
+            track (bool): Whether to track the signal.
+            log (bool): Whether to log the signal.
+            config_folder (str): Path to the configuration folder.
+        """
         if valid:
             filepath = os.path.join(config_folder, "ir_code_" + str(model) + ".txt")
             if os.path.exists(filepath):
@@ -52,6 +75,9 @@ def main():
         idle()
  
     def idle():
+        """
+        Print a message indicating that the system is waiting for an IR signal.
+        """
         print("\nWaiting for IR signal... (Press Ctrl+C to save and exit)\n")
     
     # Setup tracking and logging
@@ -62,7 +88,7 @@ def main():
     
     # Setup IR Receiver Callback
     pi = pigpio.pi()
-    ir_rec = infrared.rx(pi, IR_PIN, ir_rx_callback, track, log, config_folder) #timeout=5ms, see infrared.py
+    ir_rec = rx(pi, IR_PIN, ir_rx_callback, track, log, config_folder) #timeout=5ms, see ir_helper.py
     print("IR Receiver setup complete. Ready to capture IR signals.")
     idle()
     
