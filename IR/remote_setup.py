@@ -26,54 +26,35 @@ def main():
         sys.exit(0)
 
     def ir_rx_callback(ir_decoded, ir_hex, model, valid, track, log, config_folder):
-        print("ir_decoded={} len={}".format(ir_decoded, len(ir_decoded)))
-        print("ir_dec_hex={}".format(ir_hex))
         if valid:
-            print("Valid IR code (remote model \"{}\") captured @ {} \n".format(model, datetime.datetime.now()))
             filepath = os.path.join(config_folder, "ir_code_" + str(model) + ".txt")
-            if track:
-                key = input("Enter key ID for this code: [\"skip\" to skip] ")
-                if key != "skip":
-                    if model in ir_dict:
-                        btn_dict = ir_dict[model]
-                    else:
-                        btn_dict = {}
-                    btn_dict[key] = {ir_decoded, ir_hex}
-                    ir_dict[model] = btn_dict
-                    print(ir_dict)
-                    if log:
-                        os.makedirs(config_folder, exist_ok=True)  # Ensure the directory exists
-                        with open(filepath, "w") as f:
-                            f.write(str(ir_dict[model]))
-                        print("IR code dictionary written to file: {}\n".format(filepath))
-            else:
-                if os.path.exists(filepath):
-                    with open(filepath, "r") as f:
-                        ir_model_rd = f.read()
-                    btn_dict = parse_ir_to_dict(ir_model_rd)
-                    print("Key decoded: {}".format(find_key(btn_dict, ir_hex)))
+            key = input("Enter the button name for the captured IR code (or type 'skip' to skip): ")
+            if key.lower() != "skip":
+                if model in ir_dict:
+                    btn_dict = ir_dict[model]
                 else:
-                    print("IR code dictionary file not found. Turn on logging to create it.")
+                    btn_dict = {}
+                btn_dict[key] = {ir_decoded, ir_hex}
+                ir_dict[model] = btn_dict
+                os.makedirs(config_folder, exist_ok=True)  # Ensure the directory exists
+                with open(filepath, "w") as f:
+                    f.write(str(ir_dict[model]))
+                print(f"Button '{key}' saved successfully.")
         idle()
  
     def idle():
-        print("\nIR Rx @ {}: Idle... (Ctrl+C to exit) \n".format(IR_PIN))
+        print("\nWaiting for IR signal... (Press Ctrl+C to exit)\n")
     
     # Setup tracking and logging
-    print("IR Rx @ {}: Setup Started".format(IR_PIN))
-    config_folder="./config/"
-    track = (lambda x: x == 'y' or x == 'Y')(input("IR Rx @ {}: Turn tracking on? [y/n] ".format(IR_PIN)))
-    #print("IR Rx @ {}: Tracking on: {}".format(IR_PIN, track))
-    log = False
-    if track:
-        log = (lambda x: x == 'y' or x == 'Y')(input("IR Rx @ {}: Turn logging on? [y/n] ".format(IR_PIN)))
-        #print("IR Rx @ {}: Logging on: {}".format(IR_PIN, log))
-        ir_dict = {}
+    config_folder = "./config/"
+    track = True
+    log = True
+    ir_dict = {}
     
     # Setup IR Receiver Callback
     pi = pigpio.pi()
     ir_rec = infrared.rx(pi, IR_PIN, ir_rx_callback, track, log, config_folder) #timeout=5ms, see infrared.py
-    print("IR Rx @ {}: Setup Done @ {}".format(IR_PIN, datetime.datetime.now()))
+    print("IR Receiver setup complete. Ready to capture IR signals.")
     idle()
     
     # Setup Terminal interrupt signal SIGINT for Ctrl+C
