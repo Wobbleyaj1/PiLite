@@ -9,7 +9,6 @@
 import sys
 import os
 from load_ir_file import parse_ir_to_dict, find_key
-import datetime
 import signal
 import pigpio
 from ir_helper import parse_ir_to_dict, find_key

@@ -1,7 +1,6 @@
 import RPi.GPIO as GPIO
 import time
 import os
-import sys
 import pigpio
 from ir_helper import parse_ir_to_dict, find_key, rx
 
