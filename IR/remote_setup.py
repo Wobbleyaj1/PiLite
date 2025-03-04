@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # Monitor, capture and decode InfraRed signal (of an IR remote controller) 
 # Version:  v1.0
-# Author: Nikola Jovanovic
-# Date: 13.09.2020.
-# Repo: https://github.com/etfovac/rpi_ir
+# Author: Jesse Nipper
+# Date: 03/04/2025.
+# Repo: https://github.com/Wobbleyaj1/PiLite.git
 # SW: Python 3.7.3
 # HW: Pi Model 3B  V1.2, IR kit: Rx sensor module HX1838, Tx = IR remote(s)
 import sys
@@ -27,20 +27,25 @@ def main():
     def ir_rx_callback(ir_decoded, ir_hex, model, valid, track, log, config_folder):
         if valid:
             filepath = os.path.join(config_folder, "ir_code_" + str(model) + ".txt")
-            key = find_key(ir_dict.get(model, {}), ir_hex)
+            if os.path.exists(filepath):
+                with open(filepath, "r") as f:
+                    ir_model_rd = f.read()
+                btn_dict = parse_ir_to_dict(ir_model_rd)
+            else:
+                btn_dict = {}
+            
+            key = find_key(btn_dict, ir_hex)
             if key:
                 print(f"Button '{key}' was already assigned to this IR code.")
                 reassign = input("Do you want to reassign it? (y/n): ").strip().lower()
                 if reassign != "y":
                     idle()
                     return
+            
             key = input("Enter the button name for the captured IR code: ").strip()
-            if model in ir_dict:
-                btn_dict = ir_dict[model]
-            else:
-                btn_dict = {}
             btn_dict[key] = {ir_decoded, ir_hex}
             ir_dict[model] = btn_dict
+            
             os.makedirs(config_folder, exist_ok=True)  # Ensure the directory exists
             with open(filepath, "w") as f:
                 f.write(str(ir_dict[model]))
