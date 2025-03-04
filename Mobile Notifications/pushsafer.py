@@ -48,10 +48,10 @@ def send_pushsafer_notification(private_key, message, title, icon, sound, vibrat
 if __name__ == "__main__":
     send_pushsafer_notification(
         private_key="UGjIlhTTfcfjwmK6XJWM",  # Replace with your actual private key
-        message="Test message",              # The message text
-        title="Test title",                  # The title of the message
-        icon="1",                            # The icon number
-        sound="1",                           # The sound number
-        vibration="3",                       # The vibration number
+        message="You Left Your Lights On",              # The message text
+        title="PiLite",                  # The title of the message
+        icon="24",                            # The icon number
+        sound="10",                           # The sound number
+        vibration="1",                       # The vibration number
         picture=""                           # The picture data URL (optional)
     )
