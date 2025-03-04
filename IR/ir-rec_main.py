@@ -13,7 +13,7 @@ from IR.load_ir_file import parse_ir_to_dict, find_key
 import datetime
 import signal
 import pigpio
-import IR.infrared as infrared
+import infrared as infrared
 
 IR_PIN = 17 # Board=11, BCM=17
 
