@@ -8,6 +8,7 @@
 # HW: Pi Model 3B  V1.2, IR kit: Rx sensor module HX1838, Tx = IR remote(s)
 import sys
 import os
+sys.path.append(os.path.abspath(".."))
 from load_ir_file import parse_ir_to_dict, find_key
 import datetime
 import signal
