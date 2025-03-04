@@ -3,8 +3,7 @@ import time
 import os
 import sys
 import pigpio
-from load_ir_file import parse_ir_to_dict, find_key
-from infrared import rx
+from ir_helper import parse_ir_to_dict, find_key, rx
 
 class IRRemote:
     def __init__(self, pin, ir_code_file):
