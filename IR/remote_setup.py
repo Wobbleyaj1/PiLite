@@ -28,7 +28,14 @@ def main():
     def ir_rx_callback(ir_decoded, ir_hex, model, valid, track, log, config_folder):
         if valid:
             filepath = os.path.join(config_folder, "ir_code_" + str(model) + ".txt")
-            key = input("Enter the button name for the captured IR code (or type 'skip' to skip): ")
+            key = find_key(ir_dict.get(model, {}), ir_hex)
+            if key:
+                print(f"Button '{key}' was already assigned to this IR code.")
+                reassign = input("Do you want to reassign it? (y/n): ").strip().lower()
+                if reassign != "y":
+                    idle()
+                    return
+            key = input("Enter the button name for the captured IR code (or type 'skip' to skip): ").strip()
             if key.lower() != "skip":
                 if model in ir_dict:
                     btn_dict = ir_dict[model]
