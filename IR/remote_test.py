@@ -2,7 +2,7 @@ import RPi.GPIO as GPIO
 import time
 import os
 import pigpio
-from IR.ir_helper import parse_ir_to_dict, find_key, rx
+from ir_helper import parse_ir_to_dict, find_key, rx
 
 class IRRemote:
     """
