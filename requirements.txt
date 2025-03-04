@@ -1,2 +1,2 @@
 RPi.GPIO
-python-lirc
+pigpio==1.78

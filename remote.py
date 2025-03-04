@@ -3,9 +3,8 @@ import time
 import os
 import sys
 import pigpio
-sys.path.append(os.path.abspath("rpi_ir/config"))
 from load_ir_file import parse_ir_to_dict, find_key
-from rpi_ir.capture.infrared import rx
+from infrared import rx
 
 class IRRemote:
     def __init__(self, pin, ir_code_file):
