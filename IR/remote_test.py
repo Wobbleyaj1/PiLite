@@ -30,7 +30,7 @@ class IRRemote:
         GPIO.setup(self.pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)  # Set GPIO pin as input with pull-down resistor
         self.ir_codes = self.load_ir_codes()
         self.pi = pigpio.pi()
-        self.ir_receiver = rx(self.pi, self.pin, self.ir_rx_callback, config_folder="config")
+        self.ir_receiver = rx(self.pi, self.pin, self.ir_rx_callback, track=False, log=False)
 
     def load_ir_codes(self):
         """
@@ -55,16 +55,16 @@ class IRRemote:
             ir_decoded (str): Decoded IR signal.
             ir_hex (str): Hexadecimal representation of the IR signal.
             model (str): IR remote model.
+            valid (bool): Whether the IR signal is valid.
+            track (bool): Whether to track the signal.
             log (bool): Whether to log the signal.
-            config_folder (str): Path to the configuration folder.S
+            config_folder (str): Path to the configuration folder.
         """
         if valid:
             key = find_key(self.ir_codes, ir_hex)
             if key:
                 print(f"Button pressed: {key}")
-            else:
-                print("Unknown IR code received.")
-        
+
     def read_ir_code(self):
         """
         Print a message indicating that the system is waiting for an IR signal and keep the script running.

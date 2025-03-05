@@ -35,7 +35,7 @@ class IRRemote:
         GPIO.setup(self.pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)  # Set GPIO pin as input with pull-down resistor
         self.ir_codes = self.load_ir_codes()
         self.pi = pigpio.pi()
-        self.ir_receiver = rx(self.pi, self.pin, self.ir_rx_callback, config_folder="config")
+        self.ir_receiver = rx(self.pi, self.pin, self.ir_rx_callback, track=False, log=False)
         self.notifier = PushsaferNotification(private_key="UGjIlhTTfcfjwmK6XJWM")  # Replace with your actual private key
 
     def load_ir_codes(self):
