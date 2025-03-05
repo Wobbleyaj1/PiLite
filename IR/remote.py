@@ -21,7 +21,7 @@ class IRRemote:
         ir_receiver (rx): The IR receiver instance.
     """
 
-    def __init__(self, pin, ir_code_file):
+    def __init__(self, pin, ir_code_file, private_key):
         """
         Initialize the IRRemote class.
 
@@ -36,7 +36,7 @@ class IRRemote:
         self.ir_codes = self.load_ir_codes()
         self.pi = pigpio.pi()
         self.ir_receiver = rx(self.pi, self.pin, self.ir_rx_callback, track=False, log=False)
-        self.notifier = PushsaferNotification(private_key="UGjIlhTTfcfjwmK6XJWM")  # Replace with your actual private key
+        self.notifier = PushsaferNotification(private_key)  # Replace with your actual private key
 
     def load_ir_codes(self):
         """
