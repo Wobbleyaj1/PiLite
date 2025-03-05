@@ -2,9 +2,9 @@ from IR.remote import IRRemote
 from dotenv import load_dotenv
 import os
 
-os.system('source venv/bin/activate')
-os.system('sudo pigpiod')
+os.system('source /home/pi/PiLite/venv/bin/activate')
 os.system('pip install -r requirements.txt')
+os.system('sudo pigpiod')
 load_dotenv()
 
 secret_key = os.getenv('SECRET_KEY')
