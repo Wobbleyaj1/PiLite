@@ -62,6 +62,43 @@ class IRRemote:
             key = find_key(self.ir_codes, ir_hex)
             if key:
                 print(f"Button pressed: {key}")
+                handle_ir_command(key)
+
+    def handle_ir_command(self, key):
+        """
+        Handle the IR command based on the button key.
+
+        Args:
+            key (str): The button key corresponding to the IR command.
+        """
+        commands = {
+            '0': self.command_0,
+            '1': self.command_1,
+            '2': self.command_2,
+            '3': self.command_3,
+            '4': self.command_4,
+            '5': self.command_5,
+            '6': self.command_6,
+            '7': self.command_7,
+            '8': self.command_8,
+            '9': self.command_9,
+            '-': self.command_minus,
+            '+': self.command_plus,
+            'EQ': self.command_eq,
+            '<': self.command_left,
+            '>': self.command_right,
+            '>||': self.command_play_pause,
+            'CH+': self.command_channel_up,
+            'CH': self.command_channel,
+            'CH-': self.command_channel_down
+        }
+
+        command = commands.get(key)
+        if command:
+            command()
+        else:
+            print(f"Unknown command for key: {key}")
+        
 
     def read_ir_code(self):
         """
