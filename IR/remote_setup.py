@@ -11,9 +11,9 @@ import sys
 import os
 import signal
 import pigpio
-from ir_helper import parse_ir_to_dict, find_key, rx
+from IR.ir_helper import parse_ir_to_dict, find_key, rx
 
-# Define the GPIO pin for the IR receiver
+# SDefine the GPIO pin for the IR receiver
 IR_PIN = 17 # Board=11, BCM=17
 
 def main():
