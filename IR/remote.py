@@ -32,6 +32,7 @@ class IRRemote:
         self.ir_codes = self.load_ir_codes()
         self.pi = pigpio.pi()
         self.ir_receiver = rx(self.pi, self.pin, self.ir_rx_callback, config_folder="config")
+        self.notifier = PushsaferNotification()
 
     def load_ir_codes(self):
         """
