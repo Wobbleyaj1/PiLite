@@ -2,6 +2,7 @@ from IR.remote import IRRemote
 from dotenv import load_dotenv
 import os
 
+os.system('sudo pigpiod')
 load_dotenv()
 
 secret_key = os.getenv('SECRET_KEY')
