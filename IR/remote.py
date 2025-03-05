@@ -1,3 +1,4 @@
+import time
 import RPi.GPIO as GPIO
 import pigpio
 from IR.ir_helper import parse_ir_to_dict, find_key, rx
@@ -36,13 +37,14 @@ class IRRemote:
 
     def get_last_button(self):
         print("Last button pressed: ", self.last_button)
-        return self.last_button
+        while True:
+            time.sleep(1)  # Keep the script running to receive IR signals
 
 def main():
     """
     Main function to create an IRRemote instance and start reading IR codes.
     """
-    ir_remote = IRRemote(pin=17, ir_code_file="ir_code_ff.txt")
+    ir_remote = IRRemote(pin=17, ir_code_file="config/ir_code_ff.txt")
     ir_remote.get_last_button()
 
 if __name__ == "__main__":
