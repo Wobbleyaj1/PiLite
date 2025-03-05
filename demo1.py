@@ -3,13 +3,23 @@ from dotenv import load_dotenv
 import os
 import signal
 import sys
+import subprocess
 
 # Create and activate virtual environment
 venv_path = "/home/pi/PiLite/venv"
 if not os.path.exists(venv_path):
     os.system(f'python3 -m venv {venv_path}')
-os.system(f'{venv_path}/bin/pip install -r requirements.txt')
-os.system('sudo pigpiod')
+subprocess.run([f'{venv_path}/bin/pip', 'install', '-r', 'requirements.txt'])
+
+# Start pigpiod if not already running
+def start_pigpiod():
+    result = subprocess.run(['pgrep', 'pigpiod'], capture_output=True, text=True)
+    if result.returncode != 0:
+        subprocess.run(['sudo', 'pigpiod'])
+    else:
+        print("pigpiod is already running")
+
+start_pigpiod()
 load_dotenv()
 
 secret_key = os.getenv('SECRET_KEY')
@@ -18,7 +28,7 @@ def cleanup():
     """
     Cleanup function to stop pigpiod and perform other necessary cleanup.
     """
-    os.system('sudo killall pigpiod')
+    subprocess.run(['sudo', 'killall', 'pigpiod'])
     print("Cleanup completed.")
 
 def signal_handler(sig, frame):
