@@ -1,7 +1,7 @@
 import time
 import RPi.GPIO as GPIO
 import pigpio
-from IR.ir_helper import parse_ir_to_dict, find_key, rx
+from ir_helper import parse_ir_to_dict, find_key, rx
 
 class IRRemote:
     def __init__(self, pin, ir_code_file):
