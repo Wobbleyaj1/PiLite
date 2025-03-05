@@ -34,7 +34,7 @@ def main():
         pi.stop()
         sys.exit(0)
 
-    def ir_rx_callback(ir_decoded, ir_hex, model, valid, track, log, config_folder):
+    def ir_rx_callback(ir_decoded, ir_hex, model, valid, config_folder):
         """
         Callback function to handle received IR signals.
         

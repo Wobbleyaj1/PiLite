@@ -76,7 +76,7 @@ def find_key(btn_dict, value):
 
 # Infrared Receiver Class
 class rx:
-    def __init__(self, pi, gpio, external_callback, track, log, config_folder="../config", timeout=5):
+    def __init__(self, pi, gpio, external_callback, config_folder="../config", timeout=5):
         """
         Initialize the IR receiver.
 
@@ -84,8 +84,6 @@ class rx:
             pi (pigpio.pi): The pigpio instance.
             gpio (int): The GPIO pin number.
             external_callback (function): The callback function to handle received IR signals.
-            track (bool): Whether to track the signal.
-            log (bool): Whether to log the signal.
             config_folder (str): Path to the configuration folder.
             timeout (int): The watchdog timeout in milliseconds.
         """
@@ -93,8 +91,6 @@ class rx:
         self.gpio = gpio
         self.watchdog_timeout = timeout
         self.callback = external_callback
-        self.track = track
-        self.log = log
         self.config_folder = config_folder
         self.edges = 0
         self.rec_started = False

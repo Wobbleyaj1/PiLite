@@ -30,7 +30,7 @@ class IRRemote:
         GPIO.setup(self.pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)  # Set GPIO pin as input with pull-down resistor
         self.ir_codes = self.load_ir_codes()
         self.pi = pigpio.pi()
-        self.ir_receiver = rx(self.pi, self.pin, self.ir_rx_callback, track=False, log=False)
+        self.ir_receiver = rx(self.pi, self.pin, self.ir_rx_callback, config_folder="config")
 
     def load_ir_codes(self):
         """
@@ -55,10 +55,8 @@ class IRRemote:
             ir_decoded (str): Decoded IR signal.
             ir_hex (str): Hexadecimal representation of the IR signal.
             model (str): IR remote model.
-            valid (bool): Whether the IR signal is valid.
-            track (bool): Whether to track the signal.
             log (bool): Whether to log the signal.
-            config_folder (str): Path to the configuration folder.
+            config_folder (str): Path to the configuration folder.S
         """
         if valid:
             key = find_key(self.ir_codes, ir_hex)
@@ -77,7 +75,7 @@ def main():
     """
     Main function to create an IRRemote instance and start reading IR codes.
     """
-    ir_remote = IRRemote(pin=17, ir_code_file="config/ir_code_ff.txt")
+    ir_remote = IRRemote(pin=17, ir_code_file="ir_code_ff.txt")
     ir_remote.read_ir_code()
 
 if __name__ == "__main__":
