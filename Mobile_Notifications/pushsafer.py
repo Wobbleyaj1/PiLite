@@ -1,5 +1,6 @@
 import http.client
 import urllib.parse
+import time
 
 class PushsaferNotification:
     def __init__(self, private_key):
@@ -10,6 +11,7 @@ class PushsaferNotification:
         private_key (str): Your Pushsafer private or alias key.
         """
         self.private_key = private_key
+        self.last_notification_time = 0  # Initialize the last notification time
 
     def send_notification(self, message, title, icon, sound, vibration, picture):
         """
@@ -26,32 +28,39 @@ class PushsaferNotification:
         Returns:
         None
         """
-        # Establish a secure HTTPS connection to Pushsafer
-        conn = http.client.HTTPSConnection("pushsafer.com:443")
-        
-        # Prepare the payload with the notification parameters
-        payload = urllib.parse.urlencode({
-            "k": self.private_key,         # Your Private or Alias Key
-            "m": message,                  # Message Text
-            "t": title,                    # Title of message
-            "i": icon,                     # Icon number 1-98
-            "s": sound,                    # Sound number 0-28
-            "v": vibration,                # Vibration number 0-3
-            "p": picture,                  # Picture Data URL with Base64-encoded string
-        })
-        
-        # Send the POST request to the Pushsafer API
-        conn.request("POST", "/api", payload, { "Content-type": "application/x-www-form-urlencoded" })
-        
-        # Get the response from the server
-        response = conn.getresponse()
-        
-        # Print the status and reason of the response
-        print(response.status, response.reason)
-        
-        # Read and print the response data
-        data = response.read()
-        print(data)
+        current_time = time.time()
+        if current_time - self.last_notification_time >= 5:
+            # Establish a secure HTTPS connection to Pushsafer
+            conn = http.client.HTTPSConnection("pushsafer.com:443")
+            
+            # Prepare the payload with the notification parameters
+            payload = urllib.parse.urlencode({
+                "k": self.private_key,         # Your Private or Alias Key
+                "m": message,                  # Message Text
+                "t": title,                    # Title of message
+                "i": icon,                     # Icon number 1-98
+                "s": sound,                    # Sound number 0-28
+                "v": vibration,                # Vibration number 0-3
+                "p": picture,                  # Picture Data URL with Base64-encoded string
+            })
+            
+            # Send the POST request to the Pushsafer API
+            conn.request("POST", "/api", payload, { "Content-type": "application/x-www-form-urlencoded" })
+            
+            # Get the response from the server
+            response = conn.getresponse()
+            
+            # Print the status and reason of the response
+            print(response.status, response.reason)
+            
+            # Read and print the response data
+            data = response.read()
+            print(data)
+            
+            # Update the last notification time
+            self.last_notification_time = current_time
+        else:
+            print("Notification not sent due to delay")
 
 # Example usage:
 if __name__ == "__main__":
