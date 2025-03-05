@@ -4,6 +4,7 @@ import os
 
 os.system('source venv/bin/activate')
 os.system('sudo pigpiod')
+os.system('pip install -r requirements.txt')
 load_dotenv()
 
 secret_key = os.getenv('SECRET_KEY')
