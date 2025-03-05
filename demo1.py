@@ -1,37 +1,17 @@
 from IR.remote import IRRemote
-from dotenv import load_dotenv
-import os
 import signal
 import sys
-import subprocess
-import time
+from startup import create_and_activate_venv, start_pigpiod, load_environment_variables, cleanup
 
 # Create and activate virtual environment
 venv_path = "/home/pi/PiLite/venv"
-if not os.path.exists(venv_path):
-    os.system(f'python3 -m venv {venv_path}')
-subprocess.run([f'{venv_path}/bin/pip', 'install', '-r', 'requirements.txt'])
+create_and_activate_venv(venv_path)
 
 # Start pigpiod if not already running
-def start_pigpiod():
-    result = subprocess.run(['pgrep', 'pigpiod'], capture_output=True, text=True)
-    if result.returncode != 0:
-        subprocess.run(['sudo', 'pigpiod'])
-        time.sleep(2)  # Add a delay to ensure pigpiod has time to start
-    else:
-        print("pigpiod is already running")
-
 start_pigpiod()
-load_dotenv()
 
-secret_key = os.getenv('SECRET_KEY')
-
-def cleanup():
-    """
-    Cleanup function to stop pigpiod and perform other necessary cleanup.
-    """
-    subprocess.run(['sudo', 'killall', 'pigpiod'])
-    print("Cleanup completed.")
+# Load environment variables
+secret_key = load_environment_variables()
 
 def signal_handler(sig, frame):
     """
