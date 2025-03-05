@@ -4,9 +4,11 @@ import os
 import signal
 import sys
 
-# Activate virtual environment
-os.system('. /home/pi/PiLite/venv/bin/activate')
-os.system('pip install -r requirements.txt')
+# Create and activate virtual environment
+venv_path = "/home/pi/PiLite/venv"
+if not os.path.exists(venv_path):
+    os.system(f'python3 -m venv {venv_path}')
+os.system(f'{venv_path}/bin/pip install -r requirements.txt')
 os.system('sudo pigpiod')
 load_dotenv()
 
