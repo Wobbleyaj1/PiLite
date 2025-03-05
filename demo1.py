@@ -4,6 +4,7 @@ import os
 import signal
 import sys
 import subprocess
+import time
 
 # Create and activate virtual environment
 venv_path = "/home/pi/PiLite/venv"
@@ -16,6 +17,7 @@ def start_pigpiod():
     result = subprocess.run(['pgrep', 'pigpiod'], capture_output=True, text=True)
     if result.returncode != 0:
         subprocess.run(['sudo', 'pigpiod'])
+        time.sleep(2)  # Add a delay to ensure pigpiod has time to start
     else:
         print("pigpiod is already running")
 
@@ -45,6 +47,9 @@ def main():
     Main function to create an IRRemote instance and start reading IR codes.
     """
     ir_remote = IRRemote(pin=17, ir_code_file="/home/pi/PiLite/config/ir_code_ff.txt", private_key=secret_key)
+    if not ir_remote.pi.connected:
+        print("Failed to connect to pigpiod. Exiting.")
+        sys.exit(1)
     ir_remote.read_ir_code()
 
 if __name__ == "__main__":
