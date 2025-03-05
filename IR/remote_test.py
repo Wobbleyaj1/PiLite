@@ -47,7 +47,7 @@ class IRRemote:
             ir_model_rd = f.read()
         return parse_ir_to_dict(ir_model_rd)
 
-    def ir_rx_callback(self, ir_decoded, ir_hex, model, valid, track, log, config_folder):
+    def ir_rx_callback(self, ir_decoded, ir_hex, model, valid, config_folder):
         """
         Callback function to handle received IR signals.
 
