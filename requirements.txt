@@ -1,2 +1,3 @@
 RPi.GPIO
 pigpio==1.78
+python-dotenv
