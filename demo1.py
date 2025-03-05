@@ -1,13 +1,32 @@
 from IR.remote import IRRemote
 from dotenv import load_dotenv
 import os
+import signal
+import sys
 
-os.system('source /home/pi/PiLite/venv/bin/activate')
+# Activate virtual environment
+os.system('. /home/pi/PiLite/venv/bin/activate')
 os.system('pip install -r requirements.txt')
 os.system('sudo pigpiod')
 load_dotenv()
 
 secret_key = os.getenv('SECRET_KEY')
+
+def cleanup():
+    """
+    Cleanup function to stop pigpiod and perform other necessary cleanup.
+    """
+    os.system('sudo killall pigpiod')
+    print("Cleanup completed.")
+
+def signal_handler(sig, frame):
+    """
+    Signal handler for SIGINT (Ctrl+C).
+    """
+    cleanup()
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, signal_handler)
 
 def main():
     """
