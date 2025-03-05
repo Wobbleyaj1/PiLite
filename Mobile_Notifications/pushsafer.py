@@ -55,7 +55,7 @@ class PushsaferNotification:
 
 # Example usage:
 if __name__ == "__main__":
-    notifier = PushsaferNotification(private_key="UGjIlhTTfcfjwmK6XJWM")  # Replace with your actual private key
+    notifier = PushsaferNotification(private_key='Private Key')  # Replace with your actual private key
     notifier.send_notification(
         message="You Left Your Lights On",  # The message text
         title="PiLite",                     # The title of the message
