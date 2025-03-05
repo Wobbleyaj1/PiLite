@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 def create_and_activate_venv(venv_path):
     if not os.path.exists(venv_path):
         os.system(f'python3 -m venv {venv_path}')
-    subprocess.run([f'{venv_path}/bin/pip', 'install', '-r', 'requirements.txt'])
+    subprocess.run([f'{venv_path}/bin/pip', 'install', '-r', 'requirements.txt'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 def start_pigpiod():
     result = subprocess.run(['pgrep', 'pigpiod'], capture_output=True, text=True)
