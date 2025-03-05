@@ -2,7 +2,11 @@ import RPi.GPIO as GPIO
 import time
 import os
 import pigpio
-from ir_helper import parse_ir_to_dict, find_key, rx
+import sys
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from IR.ir_helper import parse_ir_to_dict, find_key, rx
 from Mobile_Notifications.pushsafer import PushsaferNotification
 
 class IRRemote:
