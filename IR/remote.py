@@ -21,7 +21,7 @@ class IRRemote:
         ir_receiver (rx): The IR receiver instance.
     """
 
-    def __init__(self, pin, ir_code_file, private_key):
+    def __init__(self, pin, ir_code_file, private_key, commands=None):
         """
         Initialize the IRRemote class.
 
@@ -36,7 +36,7 @@ class IRRemote:
         self.ir_codes = self.load_ir_codes()
         self.pi = pigpio.pi()
         self.ir_receiver = rx(self.pi, self.pin, self.ir_rx_callback, track=False, log=False)
-        self.notifier = PushsaferNotification(private_key)  # Replace with your actual private key
+        self.commands = commands if commands else {}
 
     def load_ir_codes(self):
         """
@@ -79,99 +79,12 @@ class IRRemote:
         Args:
             key (str): The button key corresponding to the IR command.
         """
-        commands = {
-            '0': self.command_0,
-            '1': self.command_1,
-            '2': self.command_2,
-            '3': self.command_3,
-            '4': self.command_4,
-            '5': self.command_5,
-            '6': self.command_6,
-            '7': self.command_7,
-            '8': self.command_8,
-            '9': self.command_9,
-            '-': self.command_minus,
-            '+': self.command_plus,
-            'EQ': self.command_eq,
-            '<': self.command_left,
-            '>': self.command_right,
-            '>||': self.command_play_pause,
-            'CH+': self.command_channel_up,
-            'CH': self.command_channel,
-            'CH-': self.command_channel_down
-        }
-
-        command = commands.get(key)
+        command = self.commands.get(key)
         if command:
             command()
         else:
             print(f"Unknown command for key: {key}")
     
-    def command_0(self):
-        self.notifier.send_notification(
-            message="You Left Your Lights On",  # The message text
-            title="PiLite",                     # The title of the message
-            icon="24",                          # The icon number
-            sound="10",                         # The sound number
-            vibration="1",                      # The vibration number
-            picture=""                          # The picture data URL (optional)
-        )
-        print("Command 0 executed and notification sent")
-
-    def command_1(self):
-        print("Command 1 executed")
-
-    def command_2(self):
-        print("Command 2 executed")
-
-    def command_3(self):
-        print("Command 3 executed")
-
-    def command_4(self):
-        print("Command 4 executed")
-
-    def command_5(self):
-        print("Command 5 executed")
-
-    def command_6(self):
-        print("Command 6 executed")
-
-    def command_7(self):
-        print("Command 7 executed")
-
-    def command_8(self):
-        print("Command 8 executed")
-
-    def command_9(self):
-        print("Command 9 executed")
-
-    def command_minus(self):
-        print("Command - executed")
-
-    def command_plus(self):
-        print("Command + executed")
-
-    def command_eq(self):
-        print("Command EQ executed")
-
-    def command_left(self):
-        print("Command < executed")
-
-    def command_right(self):
-        print("Command > executed")
-
-    def command_play_pause(self):
-        print("Command >|| executed")
-
-    def command_channel_up(self):
-        print("Command CH+ executed")
-
-    def command_channel(self):
-        print("Command CH executed")
-
-    def command_channel_down(self):
-        print("Command CH- executed")
-
     def read_ir_code(self):
         """
         Print a message indicating that the system is waiting for an IR signal and keep the script running.
@@ -184,7 +97,41 @@ def main():
     """
     Main function to create an IRRemote instance and start reading IR codes.
     """
-    ir_remote = IRRemote(pin=17, ir_code_file="config/ir_code_ff.txt")
+    def command_0():
+        notifier = PushsaferNotification("your_private_key")
+        notifier.send_notification(
+            message="You Left Your Lights On",  # The message text
+            title="PiLite",                     # The title of the message
+            icon="24",                          # The icon number
+            sound="10",                         # The sound number
+            vibration="1",                      # The vibration number
+            picture=""                          # The picture data URL (optional)
+        )
+        print("Command 0 executed and notification sent")
+
+    commands = {
+        '0': command_0,
+        '1': lambda: print("Command 1 executed"),
+        '2': lambda: print("Command 2 executed"),
+        '3': lambda: print("Command 3 executed"),
+        '4': lambda: print("Command 4 executed"),
+        '5': lambda: print("Command 5 executed"),
+        '6': lambda: print("Command 6 executed"),
+        '7': lambda: print("Command 7 executed"),
+        '8': lambda: print("Command 8 executed"),
+        '9': lambda: print("Command 9 executed"),
+        '-': lambda: print("Command - executed"),
+        '+': lambda: print("Command + executed"),
+        'EQ': lambda: print("Command EQ executed"),
+        '<': lambda: print("Command < executed"),
+        '>': lambda: print("Command > executed"),
+        '>||': lambda: print("Command >|| executed"),
+        'CH+': lambda: print("Command CH+ executed"),
+        'CH': lambda: print("Command CH executed"),
+        'CH-': lambda: print("Command CH- executed")
+    }
+
+    ir_remote = IRRemote(pin=17, ir_code_file="config/ir_code_ff.txt", private_key="your_private_key", commands=commands)
     ir_remote.read_ir_code()
 
 if __name__ == "__main__":
