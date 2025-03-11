@@ -55,7 +55,7 @@ def main():
         '9': lambda: print("Command 9 executed"),
         '-': lambda: print("Command - executed"),
         '+': lambda: print("Command + executed"),
-        'EQ': lambda: print("TESTING"),
+        'EQ': lambda: print("Command EQ executed"),
         '<': lambda: print("Command < executed"),
         '>': lambda: print("Command > executed"),
         '>||': lambda: print("Command >|| executed"),
