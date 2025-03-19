@@ -4,10 +4,21 @@ from rpi_ws281x import PixelStrip, Color
 import argparse
 import threading
 
-
+# RGBController class to manage LED strip animations and settings
 class RGBController:
     def __init__(self, led_count=60, led_pin=18, led_freq_hz=800000, led_dma=10, led_brightness=255, led_invert=False, led_channel=0):
-        """Initialize the RGBController with LED strip configuration."""
+        """
+        Initialize the RGBController with LED strip configuration.
+
+        Parameters:
+        - led_count: Number of LEDs in the strip.
+        - led_pin: GPIO pin connected to the strip.
+        - led_freq_hz: Frequency of the LED signal.
+        - led_dma: DMA channel to use for generating the signal.
+        - led_brightness: Initial brightness of the LEDs (0-255).
+        - led_invert: Whether to invert the signal.
+        - led_channel: Channel to use for the LEDs.
+        """
         self.led_count = led_count
         self.led_pin = led_pin
         self.led_freq_hz = led_freq_hz
@@ -16,18 +27,21 @@ class RGBController:
         self.led_invert = led_invert
         self.led_channel = led_channel
 
-        # Create NeoPixel object with appropriate configuration.
+        # Create NeoPixel object with the specified configuration
         self.strip = PixelStrip(self.led_count, self.led_pin, self.led_freq_hz, self.led_dma, self.led_invert, self.led_brightness, self.led_channel)
-        self.strip.begin()  # Initialize the library (must be called once before other functions).
+        self.strip.begin()  # Initialize the library (must be called before other functions)
 
-        # State variables
-        self.is_on = True
-        self.current_pattern = None
-        self.speed = 50  # Default speed in ms
-        self.brightness = self.led_brightness
+        # State variables to track the current state of the LEDs
+        self.is_on = True  # Whether the LEDs are powered on
+        self.current_pattern = None  # The currently active animation pattern
+        self.speed = 50  # Default animation speed in milliseconds
+        self.brightness = self.led_brightness  # Current brightness level
 
     def toggle_power(self):
-        """Toggle the power state of the LED strip."""
+        """
+        Toggle the power state of the LED strip.
+        Turns the LEDs on or off and clears the strip if turning off.
+        """
         self.is_on = not self.is_on
         if self.is_on:
             print("LEDs turned ON.")
@@ -36,42 +50,70 @@ class RGBController:
             self.clear_strip()
 
     def set_brightness(self, brightness):
-        """Set the brightness of the strip."""
+        """
+        Set the brightness of the LED strip.
+
+        Parameters:
+        - brightness: Brightness level (0-255).
+        """
         self.brightness = max(0, min(255, brightness))  # Clamp brightness between 0 and 255
         self.strip.setBrightness(self.brightness)
         self.strip.show()
         print(f"Brightness set to {self.brightness}.")
 
     def color_wipe(self, color):
-        """Wipe color across display a pixel at a time."""
+        """
+        Wipe a single color across the LED strip.
+
+        Parameters:
+        - color: The color to display (as a Color object).
+        """
         for i in range(self.strip.numPixels()):
             self.strip.setPixelColor(i, color)
         self.strip.show()
 
     def rainbow(self, wait_ms=20):
-        """Draw rainbow that fades across all pixels at once."""
+        """
+        Display a rainbow animation that fades across all pixels.
+
+        Parameters:
+        - wait_ms: Delay between updates in milliseconds.
+        """
         while self.current_pattern == "rainbow" and self.is_on:
             for j in range(256):  # One full cycle of the rainbow
                 if self.current_pattern != "rainbow" or not self.is_on:
-                    return  # Exit if the pattern is changed or LEDs are turned off
+                    return  # Exit if the pattern changes or LEDs are turned off
                 for i in range(self.strip.numPixels()):
                     self.strip.setPixelColor(i, self.wheel((i + j) & 255))
                 self.strip.show()
-                time.sleep(self.speed / 1000.0)  # Dynamically use the updated self.speed
+                time.sleep(self.speed / 1000.0)  # Use the current speed dynamically
 
     def theater_chase(self, color):
-        """Movie theater light style chaser animation."""
+        """
+        Display a theater chase animation (chasing lights).
+
+        Parameters:
+        - color: The color of the chasing lights (as a Color object).
+        """
         while self.current_pattern == "theater_chase" and self.is_on:
             for q in range(3):  # Three phases of the chase
                 for i in range(0, self.strip.numPixels(), 3):
                     self.strip.setPixelColor(i + q, color)  # Light up every third LED
                 self.strip.show()
-                time.sleep(self.speed / 1000.0)  # Dynamically use the updated self.speed
+                time.sleep(self.speed / 1000.0)  # Use the current speed dynamically
                 for i in range(0, self.strip.numPixels(), 3):
                     self.strip.setPixelColor(i + q, 0)  # Turn off the LEDs in this phase
 
     def wheel(self, pos):
-        """Generate rainbow colors across 0-255 positions."""
+        """
+        Generate rainbow colors across 0-255 positions.
+
+        Parameters:
+        - pos: Position in the rainbow (0-255).
+
+        Returns:
+        - A Color object representing the color at the given position.
+        """
         if pos < 85:
             return Color(pos * 3, 255 - pos * 3, 0)
         elif pos < 170:
@@ -82,12 +124,20 @@ class RGBController:
             return Color(0, pos * 3, 255 - pos * 3)
 
     def clear_strip(self):
-        """Turn off all LEDs."""
+        """
+        Turn off all LEDs by setting them to black.
+        """
         self.color_wipe(Color(0, 0, 0))
         print("LEDs cleared.")
 
     def get_color_options(self):
-        """Return a list of color options and their names."""
+        """
+        Return a list of predefined color options and their names.
+
+        Returns:
+        - colors: List of Color objects.
+        - color_names: List of color names as strings.
+        """
         colors = [
             Color(255, 0, 0),  # Red
             Color(0, 255, 0),  # Green
@@ -104,7 +154,9 @@ class RGBController:
         return colors, color_names
 
     def run_menu(self):
-        """Menu-driven control for the RGB strip with pattern-specific options."""
+        """
+        Display the main menu and handle user input for selecting patterns.
+        """
         while True:
             print("\nMain Menu:")
             print("1. Static Color")
@@ -124,7 +176,7 @@ class RGBController:
             elif pattern_choice == "2":
                 if self.is_on:
                     self.current_pattern = "rainbow"
-                    print("Rainbow  activated.")
+                    print("Rainbow activated.")
                     self.rainbow_menu()
                 else:
                     print("Turn on the LEDs first.")
@@ -142,12 +194,14 @@ class RGBController:
                 print("Invalid choice. Please try again.")
 
     def static_color_menu(self):
-        """Menu for Static Color options."""
+        """
+        Display the menu for the Static Color pattern.
+        Allows cycling through colors and adjusting brightness.
+        """
         colors, color_names = self.get_color_options()
         current_color_index = 0
 
         while self.current_pattern == "static_color":
-            print("\nStatic Color Menu:")
             print("\nStatic Color Menu:")
             print("1. Cycle to Next Color")
             print("2. Adjust Brightness")
@@ -169,8 +223,10 @@ class RGBController:
                 print("Invalid choice. Please try again.")
 
     def rainbow_menu(self):
-        """Menu for Rainbow options."""
-        # Set a default speed if not already set
+        """
+        Display the menu for the Rainbow pattern.
+        Allows adjusting speed and brightness.
+        """
         if not hasattr(self, 'speed') or self.speed is None:
             self.speed = 50  # Default speed in ms
 
@@ -200,7 +256,10 @@ class RGBController:
                 print("Invalid choice. Please try again.")
 
     def theater_chase_menu(self):
-        """Menu for Theater Chase options."""
+        """
+        Display the menu for the Theater Chase pattern.
+        Allows cycling through colors, adjusting speed, and adjusting brightness.
+        """
         colors, color_names = self.get_color_options()
         current_color_index = 0
 
