@@ -86,6 +86,23 @@ class RGBController:
         self.color_wipe(Color(0, 0, 0))
         print("LEDs cleared.")
 
+    def get_color_options(self):
+        """Return a list of color options and their names."""
+        colors = [
+            Color(255, 0, 0),  # Red
+            Color(0, 255, 0),  # Green
+            Color(0, 0, 255),  # Blue
+            Color(255, 255, 0),  # Yellow
+            Color(0, 255, 255),  # Cyan
+            Color(255, 0, 255),  # Magenta
+            Color(255, 255, 255),  # White
+            Color(128, 128, 128),  # Gray
+            Color(255, 165, 0),  # Orange
+            Color(75, 0, 130),  # Indigo
+        ]
+        color_names = ["Red", "Green", "Blue", "Yellow", "Cyan", "Magenta", "White", "Gray", "Orange", "Indigo"]
+        return colors, color_names
+
     def run_menu(self):
         """Menu-driven control for the RGB strip with pattern-specific options."""
         while True:
@@ -126,11 +143,11 @@ class RGBController:
 
     def static_color_menu(self):
         """Menu for Static Color options."""
-        colors = [Color(255, 0, 0), Color(0, 255, 0), Color(0, 0, 255)]  # Red, Green, Blue
-        color_names = ["Red", "Green", "Blue"]
+        colors, color_names = self.get_color_options()
         current_color_index = 0
 
         while self.current_pattern == "static_color":
+            print("\nStatic Color Menu:")
             print("\nStatic Color Menu:")
             print("1. Cycle to Next Color")
             print("2. Adjust Brightness")
@@ -184,28 +201,44 @@ class RGBController:
 
     def theater_chase_menu(self):
         """Menu for Theater Chase options."""
+        # Expanded color options
+        colors, color_names = self.get_color_options()
+        current_color_index = 0
+
         # Start the theater chase animation in a separate thread
-        theater_chase_thread = threading.Thread(target=self.theater_chase, args=(Color(255, 0, 0),))  # Example: Red color
+        theater_chase_thread = threading.Thread(target=self.theater_chase, args=(colors[current_color_index],))
         theater_chase_thread.daemon = True  # Ensure the thread exits when the main program exits
         theater_chase_thread.start()
 
         while self.current_pattern == "theater_chase":
             print("\nTheater Chase Menu:")
-            print("1. Adjust Speed")
-            print("2. Adjust Brightness")
+            print("1. Cycle to Next Color")
+            print("2. Adjust Speed")
+            print("3. Adjust Brightness")
             print("0. Back to Main Menu")
             choice = input("Enter your choice: ")
 
             if choice == "1":
+                # Cycle to the next color
+                current_color_index = (current_color_index + 1) % len(colors)
+                self.current_pattern = None  # Stop the current thread
+                self.clear_strip()
+                theater_chase_thread.join()  # Wait for the thread to finish
+                theater_chase_thread = threading.Thread(target=self.theater_chase, args=(colors[current_color_index],))
+                theater_chase_thread.daemon = True
+                theater_chase_thread.start()
+                print(f"Color changed to {color_names[current_color_index]}.")
+            elif choice == "2":
                 new_speed = int(input("Enter new speed in ms (e.g., 10 for faster, 100 for slower): "))
                 self.speed = max(1, new_speed)
                 print(f"Speed set to {self.speed} ms.")
-            elif choice == "2":
+            elif choice == "3":
                 new_brightness = int(input("Enter new brightness (0-255): "))
                 self.set_brightness(new_brightness)
             elif choice == "0":
                 self.clear_strip()  # Clear LEDs when returning to the main menu
                 self.current_pattern = None
+                theater_chase_thread.join()  # Wait for the thread to finish
             else:
                 print("Invalid choice. Please try again.")
 
