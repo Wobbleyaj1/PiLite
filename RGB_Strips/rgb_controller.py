@@ -3,150 +3,205 @@ import time
 from rpi_ws281x import PixelStrip, Color
 import argparse
 
-# LED strip configuration:
-LED_COUNT = 60       # Number of LED pixels.
-LED_PIN = 18          # GPIO pin connected to the pixels (18 uses PWM!).
-LED_FREQ_HZ = 800000  # LED signal frequency in hertz (usually 800kHz)
-LED_DMA = 10          # DMA channel to use for generating signal (try 10)
-LED_BRIGHTNESS = 255  # Set to 0 for darkest and 255 for brightest
-LED_INVERT = False    # True to invert the signal (when using NPN transistor level shift)
-LED_CHANNEL = 0       # Set to '1' for GPIOs 13, 19, 41, 45, or 53
 
+class RGBController:
+    def __init__(self, led_count=60, led_pin=18, led_freq_hz=800000, led_dma=10, led_brightness=255, led_invert=False, led_channel=0):
+        """Initialize the RGBController with LED strip configuration."""
+        self.led_count = led_count
+        self.led_pin = led_pin
+        self.led_freq_hz = led_freq_hz
+        self.led_dma = led_dma
+        self.led_brightness = led_brightness
+        self.led_invert = led_invert
+        self.led_channel = led_channel
 
-# Define functions which animate LEDs in various ways.
-def colorWipe(strip, color, wait_ms=50):
-    """Wipe color across display a pixel at a time."""
-    for i in range(strip.numPixels()):
-        strip.setPixelColor(i, color)
-        strip.show()
-        time.sleep(wait_ms / 1000.0)
+        # Create NeoPixel object with appropriate configuration.
+        self.strip = PixelStrip(self.led_count, self.led_pin, self.led_freq_hz, self.led_dma, self.led_invert, self.led_brightness, self.led_channel)
+        self.strip.begin()  # Initialize the library (must be called once before other functions).
 
+        # State variables
+        self.is_on = True
+        self.current_pattern = None
+        self.speed = 50  # Default speed in ms
+        self.brightness = self.led_brightness
 
-def theaterChase(strip, color, wait_ms=50, iterations=10):
-    """Movie theater light style chaser animation."""
-    for j in range(iterations):
-        for q in range(3):
-            for i in range(0, strip.numPixels(), 3):
-                strip.setPixelColor(i + q, color)
-            strip.show()
-            time.sleep(wait_ms / 1000.0)
-            for i in range(0, strip.numPixels(), 3):
-                strip.setPixelColor(i + q, 0)
-
-
-def wheel(pos):
-    """Generate rainbow colors across 0-255 positions."""
-    if pos < 85:
-        return Color(pos * 3, 255 - pos * 3, 0)
-    elif pos < 170:
-        pos -= 85
-        return Color(255 - pos * 3, 0, pos * 3)
-    else:
-        pos -= 170
-        return Color(0, pos * 3, 255 - pos * 3)
-
-
-def rainbow(strip, wait_ms=20, iterations=1):
-    """Draw rainbow that fades across all pixels at once."""
-    for j in range(256 * iterations):
-        for i in range(strip.numPixels()):
-            strip.setPixelColor(i, wheel((i + j) & 255))
-        strip.show()
-        time.sleep(wait_ms / 1000.0)
-
-
-def rainbowCycle(strip, wait_ms=20, iterations=5):
-    """Draw rainbow that uniformly distributes itself across all pixels."""
-    for j in range(256 * iterations):
-        for i in range(strip.numPixels()):
-            strip.setPixelColor(i, wheel(
-                (int(i * 256 / strip.numPixels()) + j) & 255))
-        strip.show()
-        time.sleep(wait_ms / 1000.0)
-
-
-def theaterChaseRainbow(strip, wait_ms=50):
-    """Rainbow movie theater light style chaser animation."""
-    for j in range(256):
-        for q in range(3):
-            for i in range(0, strip.numPixels(), 3):
-                strip.setPixelColor(i + q, wheel((i + j) % 255))
-            strip.show()
-            time.sleep(wait_ms / 1000.0)
-            for i in range(0, strip.numPixels(), 3):
-                strip.setPixelColor(i + q, 0)
-
-
-def clearStrip(strip):
-    """Turn off all LEDs."""
-    colorWipe(strip, Color(0, 0, 0), 10)
-
-
-# Menu-driven control
-def main_menu(strip):
-    while True:
-        print("\nSelect an animation:")
-        print("1. Color Wipe")
-        print("2. Theater Chase")
-        print("3. Rainbow")
-        print("4. Rainbow Cycle")
-        print("5. Theater Chase Rainbow")
-        print("6. Clear LEDs")
-        print("0. Exit")
-        choice = input("Enter your choice: ")
-
-        if choice == "1":
-            r = int(input("Enter red value (0-255): "))
-            g = int(input("Enter green value (0-255): "))
-            b = int(input("Enter blue value (0-255): "))
-            wait_ms = int(input("Enter delay in ms (e.g., 50): "))
-            colorWipe(strip, Color(r, g, b), wait_ms)
-        elif choice == "2":
-            r = int(input("Enter red value (0-255): "))
-            g = int(input("Enter green value (0-255): "))
-            b = int(input("Enter blue value (0-255): "))
-            wait_ms = int(input("Enter delay in ms (e.g., 50): "))
-            iterations = int(input("Enter number of iterations (e.g., 10): "))
-            theaterChase(strip, Color(r, g, b), wait_ms, iterations)
-        elif choice == "3":
-            wait_ms = int(input("Enter delay in ms (e.g., 20): "))
-            iterations = int(input("Enter number of iterations (e.g., 1): "))
-            rainbow(strip, wait_ms, iterations)
-        elif choice == "4":
-            wait_ms = int(input("Enter delay in ms (e.g., 20): "))
-            iterations = int(input("Enter number of iterations (e.g., 5): "))
-            rainbowCycle(strip, wait_ms, iterations)
-        elif choice == "5":
-            wait_ms = int(input("Enter delay in ms (e.g., 50): "))
-            theaterChaseRainbow(strip, wait_ms)
-        elif choice == "6":
-            clearStrip(strip)
-        elif choice == "0":
-            print("Exiting...")
-            clearStrip(strip)
-            break
+    def toggle_power(self):
+        """Toggle the power state of the LED strip."""
+        self.is_on = not self.is_on
+        if self.is_on:
+            print("LEDs turned ON.")
         else:
-            print("Invalid choice. Please try again.")
+            print("LEDs turned OFF.")
+            self.clear_strip()
+
+    def set_brightness(self, brightness):
+        """Set the brightness of the strip."""
+        self.brightness = max(0, min(255, brightness))  # Clamp brightness between 0 and 255
+        self.strip.setBrightness(self.brightness)
+        self.strip.show()
+        print(f"Brightness set to {self.brightness}.")
+
+    def color_wipe(self, color):
+        """Wipe color across display a pixel at a time."""
+        for i in range(self.strip.numPixels()):
+            self.strip.setPixelColor(i, color)
+        self.strip.show()
+
+    def rainbow_cycle(self):
+        """Draw rainbow that uniformly distributes itself across all pixels."""
+        while self.current_pattern == "rainbow_cycle" and self.is_on:
+            for j in range(256):
+                for i in range(self.strip.numPixels()):
+                    self.strip.setPixelColor(i, self.wheel((int(i * 256 / self.strip.numPixels()) + j) & 255))
+                self.strip.show()
+                time.sleep(self.speed / 1000.0)
+
+    def theater_chase(self, color):
+        """Movie theater light style chaser animation."""
+        while self.current_pattern == "theater_chase" and self.is_on:
+            for q in range(3):
+                for i in range(0, self.strip.numPixels(), 3):
+                    self.strip.setPixelColor(i + q, color)
+                self.strip.show()
+                time.sleep(self.speed / 1000.0)
+                for i in range(0, self.strip.numPixels(), 3):
+                    self.strip.setPixelColor(i + q, 0)
+
+    def wheel(self, pos):
+        """Generate rainbow colors across 0-255 positions."""
+        if pos < 85:
+            return Color(pos * 3, 255 - pos * 3, 0)
+        elif pos < 170:
+            pos -= 85
+            return Color(255 - pos * 3, 0, pos * 3)
+        else:
+            pos -= 170
+            return Color(0, pos * 3, 255 - pos * 3)
+
+    def clear_strip(self):
+        """Turn off all LEDs."""
+        self.color_wipe(Color(0, 0, 0))
+        print("LEDs cleared.")
+
+    def run_menu(self):
+        """Menu-driven control for the RGB strip with pattern-specific options."""
+        while True:
+            print("\nMain Menu:")
+            print("1. Static Color")
+            print("2. Rainbow Cycle")
+            print("3. Theater Chase")
+            print("0. Exit")
+            pattern_choice = input("Select a pattern: ")
+
+            if pattern_choice == "1":
+                if self.is_on:
+                    self.current_pattern = "static_color"
+                    self.color_wipe(Color(255, 0, 0))  # Default to red
+                    print("Static Color activated.")
+                    self.static_color_menu()
+                else:
+                    print("Turn on the LEDs first.")
+            elif pattern_choice == "2":
+                if self.is_on:
+                    self.current_pattern = "rainbow_cycle"
+                    print("Rainbow Cycle activated.")
+                    self.rainbow_cycle_menu()
+                else:
+                    print("Turn on the LEDs first.")
+            elif pattern_choice == "3":
+                if self.is_on:
+                    self.current_pattern = "theater_chase"
+                    print("Theater Chase activated.")
+                    self.theater_chase_menu()
+                else:
+                    print("Turn on the LEDs first.")
+            elif pattern_choice == "0":
+                print("Exiting...")
+                self.clear_strip()
+                break
+            else:
+                print("Invalid choice. Please try again.")
+
+    def static_color_menu(self):
+        """Menu for Static Color options."""
+        while self.current_pattern == "static_color":
+            print("\nStatic Color Menu:")
+            print("1. Cycle to Next Color")
+            print("2. Adjust Brightness")
+            print("0. Back to Main Menu")
+            choice = input("Enter your choice: ")
+
+            if choice == "1":
+                # Cycle to the next color (example: red -> green -> blue)
+                self.color_wipe(Color(0, 255, 0))  # Example: switch to green
+                print("Color changed to Green.")
+            elif choice == "2":
+                new_brightness = int(input("Enter new brightness (0-255): "))
+                self.set_brightness(new_brightness)
+            elif choice == "0":
+                self.current_pattern = None
+            else:
+                print("Invalid choice. Please try again.")
+
+    def rainbow_cycle_menu(self):
+        """Menu for Rainbow Cycle options."""
+        while self.current_pattern == "rainbow_cycle":
+            print("\nRainbow Cycle Menu:")
+            print("1. Adjust Speed")
+            print("2. Adjust Brightness")
+            print("0. Back to Main Menu")
+            choice = input("Enter your choice: ")
+
+            if choice == "1":
+                new_speed = int(input("Enter new speed in ms (e.g., 10 for faster, 100 for slower): "))
+                self.speed = max(1, new_speed)
+                print(f"Speed set to {self.speed} ms.")
+            elif choice == "2":
+                new_brightness = int(input("Enter new brightness (0-255): "))
+                self.set_brightness(new_brightness)
+            elif choice == "0":
+                self.current_pattern = None
+            else:
+                print("Invalid choice. Please try again.")
+
+    def theater_chase_menu(self):
+        """Menu for Theater Chase options."""
+        while self.current_pattern == "theater_chase":
+            print("\nTheater Chase Menu:")
+            print("1. Adjust Speed")
+            print("2. Adjust Brightness")
+            print("0. Back to Main Menu")
+            choice = input("Enter your choice: ")
+
+            if choice == "1":
+                new_speed = int(input("Enter new speed in ms (e.g., 10 for faster, 100 for slower): "))
+                self.speed = max(1, new_speed)
+                print(f"Speed set to {self.speed} ms.")
+            elif choice == "2":
+                new_brightness = int(input("Enter new brightness (0-255): "))
+                self.set_brightness(new_brightness)
+            elif choice == "0":
+                self.current_pattern = None
+            else:
+                print("Invalid choice. Please try again.")
 
 
-# Main program logic follows:
+# Main program logic
 if __name__ == '__main__':
     # Process arguments
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--clear', action='store_true', help='clear the display on exit')
     args = parser.parse_args()
 
-    # Create NeoPixel object with appropriate configuration.
-    strip = PixelStrip(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL)
-    # Initialize the library (must be called once before other functions).
-    strip.begin()
+    # Create an instance of RGBController
+    controller = RGBController()
 
     print('Press Ctrl-C to quit.')
     if not args.clear:
         print('Use "-c" argument to clear LEDs on exit')
 
     try:
-        main_menu(strip)
+        controller.run_menu()
     except KeyboardInterrupt:
         if args.clear:
-            clearStrip(strip)
+            controller.clear_strip()
