@@ -148,6 +148,7 @@ class RGBController:
                 new_brightness = int(input("Enter new brightness (0-255): "))
                 self.set_brightness(new_brightness)
             elif choice == "0":
+                self.clear_strip()  # Clear LEDs when returning to the main menu
                 self.current_pattern = None
             else:
                 print("Invalid choice. Please try again.")
@@ -169,9 +170,14 @@ class RGBController:
                 new_brightness = int(input("Enter new brightness (0-255): "))
                 self.set_brightness(new_brightness)
             elif choice == "0":
+                self.clear_strip()  # Clear LEDs when returning to the main menu
                 self.current_pattern = None
             else:
                 print("Invalid choice. Please try again.")
+
+            # Ensure the rainbow cycle runs while in this menu
+            if self.current_pattern == "rainbow_cycle":
+                self.rainbow_cycle()
 
     def theater_chase_menu(self):
         """Menu for Theater Chase options."""
@@ -190,6 +196,7 @@ class RGBController:
                 new_brightness = int(input("Enter new brightness (0-255): "))
                 self.set_brightness(new_brightness)
             elif choice == "0":
+                self.clear_strip()  # Clear LEDs when returning to the main menu
                 self.current_pattern = None
             else:
                 print("Invalid choice. Please try again.")
