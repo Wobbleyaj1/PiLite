@@ -47,14 +47,16 @@ class RGBController:
             self.strip.setPixelColor(i, color)
         self.strip.show()
 
-    def rainbow_cycle(self):
+    def rainbow_cycle(self, wait_ms=20, iterations=5):
         """Draw rainbow that uniformly distributes itself across all pixels."""
-        while self.current_pattern == "rainbow_cycle" and self.is_on:
-            for j in range(256):
-                for i in range(self.strip.numPixels()):
-                    self.strip.setPixelColor(i, self.wheel((int(i * 256 / self.strip.numPixels()) + j) & 255))
-                self.strip.show()
-                time.sleep(self.speed / 1000.0)
+        for j in range(256 * iterations):
+            if self.current_pattern != "rainbow_cycle" or not self.is_on:
+                break  # Exit if the pattern is changed or LEDs are turned off
+            for i in range(self.strip.numPixels()):
+                self.strip.setPixelColor(i, self.wheel(
+                    (int(i * 256 / self.strip.numPixels()) + j) & 255))
+            self.strip.show()
+            time.sleep(wait_ms / 1000.0)
 
     def theater_chase(self, color):
         """Movie theater light style chaser animation."""
