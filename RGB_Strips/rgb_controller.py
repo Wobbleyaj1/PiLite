@@ -205,8 +205,12 @@ class RGBController:
         current_color_index = 0
 
         # Start the theater chase animation in a separate thread
-        theater_chase_thread = threading.Thread(target=self.theater_chase, args=(colors[current_color_index],))
-        theater_chase_thread.daemon = True  # Ensure the thread exits when the main program exits
+        def start_theater_chase_thread():
+            """Helper function to start the theater chase thread."""
+            self.current_pattern = "theater_chase"
+            return threading.Thread(target=self.theater_chase, args=(colors[current_color_index],), daemon=True)
+
+        theater_chase_thread = start_theater_chase_thread()
         theater_chase_thread.start()
 
         while self.current_pattern == "theater_chase":
@@ -220,13 +224,15 @@ class RGBController:
             if choice == "1":
                 # Cycle to the next color
                 current_color_index = (current_color_index + 1) % len(colors)
-                self.current_pattern = None  # Stop the current thread
-                self.clear_strip()
+                print(f"Changing color to {color_names[current_color_index]}...")
+                
+                # Stop the current thread
+                self.current_pattern = None
                 theater_chase_thread.join()  # Wait for the thread to finish
-                theater_chase_thread = threading.Thread(target=self.theater_chase, args=(colors[current_color_index],))
-                theater_chase_thread.daemon = True
+                
+                # Start a new thread with the updated color
+                theater_chase_thread = start_theater_chase_thread()
                 theater_chase_thread.start()
-                print(f"Color changed to {color_names[current_color_index]}.")
             elif choice == "2":
                 new_speed = int(input("Enter new speed in ms (e.g., 10 for faster, 100 for slower): "))
                 self.speed = max(1, new_speed)
@@ -235,9 +241,10 @@ class RGBController:
                 new_brightness = int(input("Enter new brightness (0-255): "))
                 self.set_brightness(new_brightness)
             elif choice == "0":
-                self.clear_strip()  # Clear LEDs when returning to the main menu
+                print("Exiting Theater Chase...")
                 self.current_pattern = None
                 theater_chase_thread.join()  # Wait for the thread to finish
+                self.clear_strip()
             else:
                 print("Invalid choice. Please try again.")
 
