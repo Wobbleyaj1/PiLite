@@ -1,0 +1,2 @@
+to run lighting.py:
+    sudo /home/pi/PiLite/venv/bin/python3 lighting.py
