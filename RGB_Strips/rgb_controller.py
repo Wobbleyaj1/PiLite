@@ -62,13 +62,13 @@ class RGBController:
     def theater_chase(self, color):
         """Movie theater light style chaser animation."""
         while self.current_pattern == "theater_chase" and self.is_on:
-            for q in range(3):
+            for q in range(3):  # Three phases of the chase
                 for i in range(0, self.strip.numPixels(), 3):
-                    self.strip.setPixelColor(i + q, color)
+                    self.strip.setPixelColor(i + q, color)  # Light up every third LED
                 self.strip.show()
-                time.sleep(self.speed / 1000.0)
+                time.sleep(self.speed / 1000.0)  # Dynamically use the updated self.speed
                 for i in range(0, self.strip.numPixels(), 3):
-                    self.strip.setPixelColor(i + q, 0)
+                    self.strip.setPixelColor(i + q, 0)  # Turn off the LEDs in this phase
 
     def wheel(self, pos):
         """Generate rainbow colors across 0-255 positions."""
@@ -184,6 +184,11 @@ class RGBController:
 
     def theater_chase_menu(self):
         """Menu for Theater Chase options."""
+        # Start the theater chase animation in a separate thread
+        theater_chase_thread = threading.Thread(target=self.theater_chase, args=(Color(255, 0, 0),))  # Example: Red color
+        theater_chase_thread.daemon = True  # Ensure the thread exits when the main program exits
+        theater_chase_thread.start()
+
         while self.current_pattern == "theater_chase":
             print("\nTheater Chase Menu:")
             print("1. Adjust Speed")
@@ -203,7 +208,6 @@ class RGBController:
                 self.current_pattern = None
             else:
                 print("Invalid choice. Please try again.")
-
 
 # Main program logic
 if __name__ == '__main__':
