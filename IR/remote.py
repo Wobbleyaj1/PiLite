@@ -7,6 +7,7 @@ import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from IR.ir_helper import parse_ir_to_dict, find_key, rx
+from RGB_Strips.rgb_controller import RGBController
 from Mobile_Notifications.pushsafer import PushsaferNotification
 
 class IRRemote:
@@ -108,15 +109,7 @@ class IRRemote:
             print(f"Unknown command for key: {key}")
     
     def command_0(self):
-        self.notifier.send_notification(
-            message="You Left Your Lights On",  # The message text
-            title="PiLite",                     # The title of the message
-            icon="24",                          # The icon number
-            sound="10",                         # The sound number
-            vibration="1",                      # The vibration number
-            picture=""                          # The picture data URL (optional)
-        )
-        print("Command 0 executed and notification sent")
+        pass
 
     def command_1(self):
         print("Command 1 executed")
@@ -146,31 +139,94 @@ class IRRemote:
         print("Command 9 executed")
 
     def command_minus(self):
-        print("Command - executed")
+        """
+        Command -: Decrease brightness.
+        """
+        print("Command -: Decreasing brightness...")
+        new_brightness = max(self.controller.brightness - 25, 0)
+        self.controller.set_brightness(new_brightness)
 
     def command_plus(self):
-        print("Command + executed")
+        """
+        Command +: Increase brightness.
+        """
+        print("Command +: Increasing brightness...")
+        new_brightness = min(self.controller.brightness + 25, 255)
+        self.controller.set_brightness(new_brightness)
 
     def command_eq(self):
         print("Command EQ executed")
 
     def command_left(self):
-        print("Command < executed")
+        """
+        Command <: Decrease speed.
+        """
+        print("Command <: Decreasing speed...")
+        self.controller.speed = self.controller.speed + 10
+        print(f"Speed set to {self.controller.speed} ms.")
 
     def command_right(self):
-        print("Command > executed")
+        """
+        Command >: Increase speed.
+        """
+        print("Command >: Increasing speed...")
+        self.controller.speed = max(1, self.controller.speed - 10)
+        print(f"Speed set to {self.controller.speed} ms.")
+
 
     def command_play_pause(self):
-        print("Command >|| executed")
+        self.notifier.send_notification(
+            message="You Left Your Lights On",  # The message text
+            title="PiLite",                     # The title of the message
+            icon="24",                          # The icon number
+            sound="10",                         # The sound number
+            vibration="1",                      # The vibration number
+            picture=""                          # The picture data URL (optional)
+        )
+        print("Command 0 executed and notification sent")
 
     def command_channel_up(self):
-        print("Command CH+ executed")
+        """
+        Command CH+: Cycle clockwise through the colors.
+        """
+        print("Command CH+: Cycling clockwise through colors...")
+        colors, color_names = self.controller.get_color_options()
+        self.controller.current_color_index = (self.controller.current_color_index + 1) % len(colors)
+        self.controller.color_wipe(colors[self.controller.current_color_index])
+        print(f"Color changed to {color_names[self.controller.current_color_index]}.")
+
 
     def command_channel(self):
-        print("Command CH executed")
+        """
+        Command CH: Cycle through patterns.
+        """
+        print("Command CH: Cycling through patterns...")
+        patterns = ["static_color", "rainbow", "theater_chase"]
+        current_index = patterns.index(self.controller.current_pattern) if self.controller.current_pattern in patterns else -1
+        next_index = (current_index + 1) % len(patterns)
+        self.controller.current_pattern = patterns[next_index]
+
+        if self.controller.current_pattern == "static_color":
+            print("Switching to Static Color...")
+            self.controller.color_wipe(Color(255, 0, 0))  # Default to red
+        elif self.controller.current_pattern == "rainbow":
+            print("Switching to Rainbow...")
+            threading.Thread(target=self.controller.rainbow, daemon=True).start()
+        elif self.controller.current_pattern == "theater_chase":
+            print("Switching to Theater Chase...")
+            threading.Thread(target=self.controller.theater_chase, args=(Color(255, 255, 0),), daemon=True).start()
+
 
     def command_channel_down(self):
-        print("Command CH- executed")
+        """
+        Command CH-: Cycle counterclockwise through the colors.
+        """
+        print("Command CH-: Cycling counterclockwise through colors...")
+        colors, color_names = self.controller.get_color_options()
+        self.controller.current_color_index = (self.controller.current_color_index - 1) % len(colors)
+        self.controller.color_wipe(colors[self.controller.current_color_index])
+        print(f"Color changed to {color_names[self.controller.current_color_index]}.")
+
 
     def read_ir_code(self):
         """
