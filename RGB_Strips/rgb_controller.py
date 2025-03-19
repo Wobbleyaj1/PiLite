@@ -201,7 +201,6 @@ class RGBController:
 
     def theater_chase_menu(self):
         """Menu for Theater Chase options."""
-        # Expanded color options
         colors, color_names = self.get_color_options()
         current_color_index = 0
 
