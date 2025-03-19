@@ -48,7 +48,7 @@ class RGBController:
             self.strip.setPixelColor(i, color)
         self.strip.show()
 
-    def rainbow(self):
+    def rainbow(self, wait_ms=20):
         """Draw rainbow that fades across all pixels at once."""
         while self.current_pattern == "rainbow" and self.is_on:
             for j in range(256):  # One full cycle of the rainbow
