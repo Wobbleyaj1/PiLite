@@ -48,7 +48,7 @@ class RGBController:
             self.strip.setPixelColor(i, color)
         self.strip.show()
 
-    def rainbow(self, wait_ms=20):
+    def rainbow(self):
         """Draw rainbow that fades across all pixels at once."""
         while self.current_pattern == "rainbow" and self.is_on:
             for j in range(256):  # One full cycle of the rainbow
@@ -57,7 +57,7 @@ class RGBController:
                 for i in range(self.strip.numPixels()):
                     self.strip.setPixelColor(i, self.wheel((i + j) & 255))
                 self.strip.show()
-                time.sleep(wait_ms / 1000.0)
+                time.sleep(self.speed / 1000.0)  # Dynamically use the updated self.speed
 
     def theater_chase(self, color):
         """Movie theater light style chaser animation."""
@@ -120,7 +120,6 @@ class RGBController:
                     print("Turn on the LEDs first.")
             elif pattern_choice == "0":
                 print("Exiting...")
-                self.clear_strip()
                 break
             else:
                 print("Invalid choice. Please try again.")
