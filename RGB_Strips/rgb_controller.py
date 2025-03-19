@@ -90,6 +90,7 @@ class RGBController:
             print("1. Static Color")
             print("2. Rainbow Cycle")
             print("3. Theater Chase")
+            print("4. Clear LEDs")
             print("0. Exit")
             pattern_choice = input("Select a pattern: ")
 
@@ -115,6 +116,9 @@ class RGBController:
                     self.theater_chase_menu()
                 else:
                     print("Turn on the LEDs first.")
+            elif pattern_choice == "4":
+                self.clear_strip()
+                print("LEDs cleared.")
             elif pattern_choice == "0":
                 print("Exiting...")
                 self.clear_strip()
@@ -124,6 +128,10 @@ class RGBController:
 
     def static_color_menu(self):
         """Menu for Static Color options."""
+        colors = [Color(255, 0, 0), Color(0, 255, 0), Color(0, 0, 255)]  # Red, Green, Blue
+        color_names = ["Red", "Green", "Blue"]
+        current_color_index = 0
+
         while self.current_pattern == "static_color":
             print("\nStatic Color Menu:")
             print("1. Cycle to Next Color")
@@ -132,9 +140,10 @@ class RGBController:
             choice = input("Enter your choice: ")
 
             if choice == "1":
-                # Cycle to the next color (example: red -> green -> blue)
-                self.color_wipe(Color(0, 255, 0))  # Example: switch to green
-                print("Color changed to Green.")
+                # Cycle to the next color
+                current_color_index = (current_color_index + 1) % len(colors)
+                self.color_wipe(colors[current_color_index])
+                print(f"Color changed to {color_names[current_color_index]}.")
             elif choice == "2":
                 new_brightness = int(input("Enter new brightness (0-255): "))
                 self.set_brightness(new_brightness)
