@@ -49,13 +49,14 @@ class RGBController:
 
     def rainbow(self, wait_ms=20, iterations=1):
         """Draw rainbow that fades across all pixels at once."""
-        for j in range(256 * iterations):
-            if self.current_pattern != "rainbow" or not self.is_on:
-                break  # Exit if the pattern is changed or LEDs are turned off
-            for i in range(self.strip.numPixels()):
-                self.strip.setPixelColor(i, self.wheel((i + j) & 255))
-            self.strip.show()
-            time.sleep(wait_ms / 1000.0)
+        while self.current_pattern == "rainbow" and self.is_on:
+            for j in range(256):  # One full cycle of the rainbow
+                if self.current_pattern != "rainbow" or not self.is_on:
+                    return  # Exit if the pattern is changed or LEDs are turned off
+                for i in range(self.strip.numPixels()):
+                    self.strip.setPixelColor(i, self.wheel((i + j) & 255))
+                self.strip.show()
+                time.sleep(wait_ms / 1000.0)
 
     def theater_chase(self, color):
         """Movie theater light style chaser animation."""
@@ -152,6 +153,10 @@ class RGBController:
 
     def rainbow_menu(self):
         """Menu for Rainbow options."""
+        # Set a default speed if not already set
+        if not hasattr(self, 'speed') or self.speed is None:
+            self.speed = 50  # Default speed in ms
+
         while self.current_pattern == "rainbow":
             print("\nRainbow Menu:")
             print("1. Adjust Speed")
@@ -172,7 +177,7 @@ class RGBController:
             else:
                 print("Invalid choice. Please try again.")
 
-            # Ensure the rainbow runs while in this menu
+            # Continuously run the rainbow animation while in this menu
             if self.current_pattern == "rainbow":
                 self.rainbow(wait_ms=self.speed)
 
