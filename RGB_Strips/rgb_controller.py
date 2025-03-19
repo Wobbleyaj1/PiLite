@@ -2,6 +2,7 @@
 import time
 from rpi_ws281x import PixelStrip, Color
 import argparse
+import threading
 
 
 class RGBController:
@@ -47,7 +48,7 @@ class RGBController:
             self.strip.setPixelColor(i, color)
         self.strip.show()
 
-    def rainbow(self, wait_ms=20, iterations=1):
+    def rainbow(self, wait_ms=20):
         """Draw rainbow that fades across all pixels at once."""
         while self.current_pattern == "rainbow" and self.is_on:
             for j in range(256):  # One full cycle of the rainbow
@@ -157,6 +158,11 @@ class RGBController:
         if not hasattr(self, 'speed') or self.speed is None:
             self.speed = 50  # Default speed in ms
 
+        # Start the rainbow animation in a separate thread
+        rainbow_thread = threading.Thread(target=self.rainbow, args=(self.speed,))
+        rainbow_thread.daemon = True  # Ensure the thread exits when the main program exits
+        rainbow_thread.start()
+
         while self.current_pattern == "rainbow":
             print("\nRainbow Menu:")
             print("1. Adjust Speed")
@@ -176,10 +182,6 @@ class RGBController:
                 self.current_pattern = None
             else:
                 print("Invalid choice. Please try again.")
-
-            # Continuously run the rainbow animation while in this menu
-            if self.current_pattern == "rainbow":
-                self.rainbow(wait_ms=self.speed)
 
     def theater_chase_menu(self):
         """Menu for Theater Chase options."""
