@@ -47,14 +47,13 @@ class RGBController:
             self.strip.setPixelColor(i, color)
         self.strip.show()
 
-    def rainbow_cycle(self, wait_ms=20, iterations=5):
-        """Draw rainbow that uniformly distributes itself across all pixels."""
+    def rainbow(self, wait_ms=20, iterations=1):
+        """Draw rainbow that fades across all pixels at once."""
         for j in range(256 * iterations):
-            if self.current_pattern != "rainbow_cycle" or not self.is_on:
+            if self.current_pattern != "rainbow" or not self.is_on:
                 break  # Exit if the pattern is changed or LEDs are turned off
             for i in range(self.strip.numPixels()):
-                self.strip.setPixelColor(i, self.wheel(
-                    (int(i * 256 / self.strip.numPixels()) + j) & 255))
+                self.strip.setPixelColor(i, self.wheel((i + j) & 255))
             self.strip.show()
             time.sleep(wait_ms / 1000.0)
 
@@ -90,9 +89,8 @@ class RGBController:
         while True:
             print("\nMain Menu:")
             print("1. Static Color")
-            print("2. Rainbow Cycle")
+            print("2. Rainbow")
             print("3. Theater Chase")
-            print("4. Clear LEDs")
             print("0. Exit")
             pattern_choice = input("Select a pattern: ")
 
@@ -106,9 +104,9 @@ class RGBController:
                     print("Turn on the LEDs first.")
             elif pattern_choice == "2":
                 if self.is_on:
-                    self.current_pattern = "rainbow_cycle"
-                    print("Rainbow Cycle activated.")
-                    self.rainbow_cycle_menu()
+                    self.current_pattern = "rainbow"
+                    print("Rainbow  activated.")
+                    self.rainbow_menu()
                 else:
                     print("Turn on the LEDs first.")
             elif pattern_choice == "3":
@@ -118,9 +116,6 @@ class RGBController:
                     self.theater_chase_menu()
                 else:
                     print("Turn on the LEDs first.")
-            elif pattern_choice == "4":
-                self.clear_strip()
-                print("LEDs cleared.")
             elif pattern_choice == "0":
                 print("Exiting...")
                 self.clear_strip()
@@ -155,10 +150,10 @@ class RGBController:
             else:
                 print("Invalid choice. Please try again.")
 
-    def rainbow_cycle_menu(self):
-        """Menu for Rainbow Cycle options."""
-        while self.current_pattern == "rainbow_cycle":
-            print("\nRainbow Cycle Menu:")
+    def rainbow_menu(self):
+        """Menu for Rainbow options."""
+        while self.current_pattern == "rainbow":
+            print("\nRainbow Menu:")
             print("1. Adjust Speed")
             print("2. Adjust Brightness")
             print("0. Back to Main Menu")
@@ -177,9 +172,9 @@ class RGBController:
             else:
                 print("Invalid choice. Please try again.")
 
-            # Ensure the rainbow cycle runs while in this menu
-            if self.current_pattern == "rainbow_cycle":
-                self.rainbow_cycle()
+            # Ensure the rainbow runs while in this menu
+            if self.current_pattern == "rainbow":
+                self.rainbow(wait_ms=self.speed)
 
     def theater_chase_menu(self):
         """Menu for Theater Chase options."""
