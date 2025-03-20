@@ -4,6 +4,7 @@ from IR.remote import IRRemote
 import time
 import signal
 import sys
+import threading
 from startup import create_and_activate_venv, start_pigpiod, load_environment_variables, cleanup
 
 # Create and activate virtual environment
@@ -16,9 +17,11 @@ start_pigpiod()
 # Load environment variables
 secret_key = load_environment_variables()
 
-# Create instances of RGBController and IRRemote
+# Create a single instance of RGBController
 controller = RGBController()
-ir_remote = IRRemote(pin=17, ir_code_file="/home/pi/PiLite/config/ir_code_ff.txt", private_key=secret_key)
+
+# Create an instance of IRRemote and pass the shared RGBController instance
+ir_remote = IRRemote(pin=17, ir_code_file="/home/pi/PiLite/config/ir_code_ff.txt", private_key=secret_key, controller=controller)
 
 # Signal handler for graceful shutdown
 def signal_handler(sig, frame):
@@ -35,20 +38,15 @@ signal.signal(signal.SIGINT, signal_handler)
 
 def main():
     """
-    Main function to run both the RGBController menu and IRRemote functionality.
+    Main function to run the IRRemote functionality.
     """
     if not ir_remote.pi.connected:
         print("Failed to connect to pigpiod. Exiting.")
         sys.exit(1)
 
-    # Run IRRemote in a separate thread
-    import threading
-    ir_thread = threading.Thread(target=ir_remote.read_ir_code, daemon=True)
-    ir_thread.start()
-
-    # Run the RGBController menu
+    # Run IRRemote in the main thread
     try:
-        controller.run_menu()
+        ir_remote.read_ir_code()
     except KeyboardInterrupt:
         # Signal handler will handle cleanup
         pass

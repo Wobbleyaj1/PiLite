@@ -16,7 +16,7 @@ class IRRemote:
     A class to represent an IR remote control.
     """
 
-    def __init__(self, pin, ir_code_file, private_key):
+    def __init__(self, pin, ir_code_file, private_key, controller):
         """
         Initialize the IRRemote class.
 
@@ -24,10 +24,11 @@ class IRRemote:
             pin (int): The GPIO pin number for the IR receiver.
             ir_code_file (str): The file path to the IR code dictionary.
             private_key (str): The private key for Pushsafer notifications.
+            controller (RGBController): The shared RGBController instance.
         """
         self.pin = pin
         self.ir_code_file = ir_code_file
-        self.controller = RGBController()  # Create an instance of RGBController
+        self.controller = controller  # Use the shared RGBController instance
         self.controller.current_color_index = 0  # Track the current color index
         self.last_button_pressed = None  # Store the last button pressed
         GPIO.setmode(GPIO.BCM)  # Use BCM pin numbering
@@ -224,7 +225,8 @@ def main():
     """
     Main function to create an IRRemote instance and start reading IR codes.
     """
-    ir_remote = IRRemote(pin=17, ir_code_file="config/ir_code_ff.txt", private_key="your_private_key_here")
+    controller = RGBController()  # Create a shared RGBController instance
+    ir_remote = IRRemote(pin=17, ir_code_file="config/ir_code_ff.txt", private_key="your_private_key_here", controller=controller)
     ir_remote.read_ir_code()
 
 if __name__ == "__main__":
