@@ -31,7 +31,8 @@ def signal_handler(sig, frame):
     """
     print("\nExiting... Cleaning up resources.")
     controller.clear_strip()  # Clear the LEDs
-    cleanup()  # Cleanup for IRRemote and other resources
+    ir_remote.cleanup()  # Cleanup for IRRemote (stop processes, etc.)
+    cleanup()  # Cleanup for pigpiod and other resources
     sys.exit(0)
 
 signal.signal(signal.SIGINT, signal_handler)
