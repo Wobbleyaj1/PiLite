@@ -218,7 +218,7 @@ class IRRemote:
 
         if self.controller.current_pattern == "static_color":
             print("Switching to Static Color...")
-            self.controller.color_wipe(Color(255, 0, 0))  # Default to red
+            self.start_pattern_process(self.controller.color_wipe(Color(255, 0, 0)))  # Default to red
         elif self.controller.current_pattern == "rainbow":
             print("Switching to Rainbow...")
             self.start_pattern_process(self.controller.rainbow)  # Start rainbow in a new process
