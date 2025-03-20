@@ -127,7 +127,8 @@ class IRRemote:
 
     # Command implementations
     def command_0(self):
-        pass
+        print("Command 0: Clearing the lights...")
+        self.controller.clear_strip()
 
     def command_1(self):
         print("Command 1 executed")
