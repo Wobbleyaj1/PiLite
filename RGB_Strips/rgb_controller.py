@@ -93,6 +93,7 @@ class RGBController:
                 break
 
     def theater_chase(self, color):
+        self.clear_strip()
         while self.current_pattern == "theater_chase":
             for q in range(3):
                 if self.current_pattern != "theater_chase":  # Check if the pattern has changed
