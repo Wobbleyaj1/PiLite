@@ -42,8 +42,9 @@ class RGBController:
     def activate_static_color(self):
         self.stop_current_pattern()
         self.current_pattern = "static_color"
-        self.color_wipe(Color(255, 255, 255))
-        print("Static Color activated.")
+        colors, color_names = self.get_color_options()
+        self.color_wipe(colors[self.current_color_index])
+        print(f"Static Color activated: {color_names[self.current_color_index]}.")
 
     def activate_rainbow(self):
         self.stop_current_pattern()
@@ -54,8 +55,11 @@ class RGBController:
     def activate_theater_chase(self):
         self.stop_current_pattern()
         self.current_pattern = "theater_chase"
-        threading.Thread(target=self.theater_chase, args=(Color(255, 255, 0),), daemon=True).start()
-        print("Theater Chase pattern activated.")
+        colors, color_names = self.get_color_options()
+        threading.Thread(
+            target=self.theater_chase, args=(colors[self.current_color_index],), daemon=True
+        ).start()
+        print(f"Theater Chase pattern activated with color: {color_names[self.current_color_index]}.")
 
     def cycle_next_color(self):
         colors, color_names = self.get_color_options()
