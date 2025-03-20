@@ -199,10 +199,19 @@ class IRRemote:
         print(f"Color changed to {color_names[self.controller.current_color_index]}.")
 
     def command_channel(self):
+        """
+        Command CH: Cycle through patterns.
+        """
         print("Command CH: Cycling through patterns...")
         patterns = ["static_color", "rainbow", "theater_chase"]
         current_index = patterns.index(self.controller.current_pattern) if self.controller.current_pattern in patterns else -1
         next_index = (current_index + 1) % len(patterns)
+
+        # Clear the current pattern
+        self.controller.clear_strip()
+        self.controller.current_pattern = None  # Reset the current pattern
+
+        # Switch to the next pattern
         self.controller.current_pattern = patterns[next_index]
 
         if self.controller.current_pattern == "static_color":
@@ -210,10 +219,10 @@ class IRRemote:
             self.controller.color_wipe(Color(255, 0, 0))  # Default to red
         elif self.controller.current_pattern == "rainbow":
             print("Switching to Rainbow...")
-            threading.Thread(target=self.controller.rainbow, daemon=True).start()
+            self.controller.rainbow()  # Call the rainbow method directly
         elif self.controller.current_pattern == "theater_chase":
             print("Switching to Theater Chase...")
-            threading.Thread(target=self.controller.theater_chase, args=(Color(255, 255, 0),), daemon=True).start()
+            self.controller.theater_chase(Color(255, 255, 0))  # Default to yellow
 
     def command_channel_down(self):
         print("Command CH-: Cycling counterclockwise through colors...")
