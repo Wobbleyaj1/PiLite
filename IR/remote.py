@@ -4,6 +4,7 @@ import os
 import pigpio
 import sys
 import threading
+import multiprocessing
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -37,6 +38,7 @@ class IRRemote:
         self.pi = pigpio.pi()
         self.ir_receiver = rx(self.pi, self.pin, self.ir_rx_callback, track=False, log=False)
         self.notifier = PushsaferNotification(private_key)  # Replace with your actual private key
+        self.current_pattern_process = None  # Track the current pattern process
 
     def load_ir_codes(self):
         """
@@ -219,10 +221,10 @@ class IRRemote:
             self.controller.color_wipe(Color(255, 0, 0))  # Default to red
         elif self.controller.current_pattern == "rainbow":
             print("Switching to Rainbow...")
-            self.controller.rainbow()  # Call the rainbow method directly
+            self.start_pattern_process(self.controller.rainbow)  # Start rainbow in a new process
         elif self.controller.current_pattern == "theater_chase":
             print("Switching to Theater Chase...")
-            self.controller.theater_chase(Color(255, 255, 0))  # Default to yellow
+            self.start_pattern_process(self.controller.theater_chase, Color(255, 255, 0))  # Start theater chase in a new process
 
     def command_channel_down(self):
         print("Command CH-: Cycling counterclockwise through colors...")
@@ -230,6 +232,25 @@ class IRRemote:
         self.controller.current_color_index = (self.controller.current_color_index - 1) % len(colors)
         self.controller.color_wipe(colors[self.controller.current_color_index])
         print(f"Color changed to {color_names[self.controller.current_color_index]}.")
+
+    def stop_current_pattern(self):
+        """
+        Stop the currently running pattern process, if any.
+        """
+        if self.current_pattern_process and self.current_pattern_process.is_alive():
+            print("Stopping the current pattern...")
+            self.current_pattern_process.terminate()
+            self.current_pattern_process.join()
+            self.current_pattern_process = None
+            print("Current pattern stopped.")
+
+    def start_pattern_process(self, target, *args):
+        """
+        Start a new process for the given pattern target function.
+        """
+        self.stop_current_pattern()  # Stop any existing pattern process
+        self.current_pattern_process = multiprocessing.Process(target=target, args=args)
+        self.current_pattern_process.start()
 
 def main():
     """
