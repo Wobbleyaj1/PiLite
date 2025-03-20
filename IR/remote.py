@@ -209,9 +209,6 @@ class IRRemote:
         current_index = patterns.index(self.controller.current_pattern) if self.controller.current_pattern in patterns else -1
         next_index = (current_index + 1) % len(patterns)
 
-        # Stop the current pattern process (if any)
-        self.stop_current_pattern()
-
         # Clear the current pattern
         self.controller.clear_strip()
         self.controller.current_pattern = None  # Reset the current pattern
@@ -251,9 +248,10 @@ class IRRemote:
         """
         Start a new process for the given pattern target function.
         """
-        self.stop_current_pattern()
-        self.current_pattern_process = multiprocessing.Process(target=target, args=args)
-        self.current_pattern_process.start()
+        self.stop_current_pattern()  # Stop any running pattern process
+        if self.controller.current_pattern != "static_color":
+            self.current_pattern_process = multiprocessing.Process(target=target, args=args)
+            self.current_pattern_process.start()
 
     def cleanup(self):
         """
