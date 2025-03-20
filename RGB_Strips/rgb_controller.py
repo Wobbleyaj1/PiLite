@@ -13,7 +13,6 @@ class RGBController:
         self.pattern_thread = None
 
     def clear_strip(self):
-        self.stop_current_pattern()
         for i in range(self.strip.numPixels()):
             self.strip.setPixelColor(i, Color(0, 0, 0))
         self.strip.show()
@@ -93,7 +92,6 @@ class RGBController:
                 break
 
     def theater_chase(self, color):
-        self.clear_strip()
         while self.current_pattern == "theater_chase":
             for q in range(3):
                 if self.current_pattern != "theater_chase":  # Check if the pattern has changed
