@@ -12,7 +12,19 @@ class RGBController:
         self.current_color_index = 0
         self.pattern_thread = None
 
+    
+    def stop_current_pattern(self):
+        """
+        Stop the currently running pattern by resetting the current_pattern
+        and waiting for the thread to exit.
+        """
+        self.current_pattern = None
+        if self.pattern_thread and self.pattern_thread.is_alive():
+            self.pattern_thread.join()
+        self.pattern_thread = None
+
     def clear_strip(self):
+        self.stop_current_pattern()
         for i in range(self.strip.numPixels()):
             self.strip.setPixelColor(i, Color(0, 0, 0))
         self.strip.show()
@@ -28,31 +40,21 @@ class RGBController:
         self.speed = max(1, self.speed + delta)
         print(f"Speed adjusted to {self.speed} ms.")
 
-    def stop_current_pattern(self):
-        """
-        Stop the currently running pattern by resetting the current_pattern
-        and waiting for the thread to exit.
-        """
-        self.current_pattern = None
-        if self.pattern_thread and self.pattern_thread.is_alive():
-            self.pattern_thread.join()
-        self.pattern_thread = None
-
     def activate_static_color(self):
-        self.stop_current_pattern()
+        self.clear_strip()
         self.current_pattern = "static_color"
         colors, color_names = self.get_color_options()
         self.color_wipe(colors[self.current_color_index])
         print(f"Static Color activated: {color_names[self.current_color_index]}.")
 
     def activate_rainbow(self):
-        self.stop_current_pattern()
+        self.clear_strip()
         self.current_pattern = "rainbow"
         threading.Thread(target=self.rainbow, daemon=True).start()
         print("Rainbow pattern activated.")
 
     def activate_theater_chase(self):
-        self.stop_current_pattern()
+        self.clear_strip()
         self.current_pattern = "theater_chase"
         colors, color_names = self.get_color_options()
         threading.Thread(
