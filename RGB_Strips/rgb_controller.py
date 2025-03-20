@@ -13,6 +13,7 @@ class RGBController:
         self.pattern_thread = None
 
     def clear_strip(self):
+        self.stop_current_pattern()
         for i in range(self.strip.numPixels()):
             self.strip.setPixelColor(i, Color(0, 0, 0))
         self.strip.show()
