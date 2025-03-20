@@ -105,6 +105,14 @@ class IRRemote:
         else:
             print(f"Unknown command for key: {key}")
 
+    def read_ir_code(self):
+        """
+        Print a message indicating that the system is waiting for an IR signal and keep the script running.
+        """
+        print("Waiting for IR code...")
+        while True:
+            time.sleep(1)  # Keep the script running to receive IR signals
+
 def main():
     """
     Main function to create an IRRemote instance and start reading IR codes.
