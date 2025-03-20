@@ -3,14 +3,13 @@ import time
 import os
 import pigpio
 import sys
-import threading
 import multiprocessing
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from IR.ir_helper import parse_ir_to_dict, find_key, rx
-from RGB_Strips.rgb_controller import RGBController, Color
 from Mobile_Notifications.pushsafer import PushsaferNotification
+from RGB_Strips.rgb_controller import RGBController
 
 class IRRemote:
     """
@@ -30,15 +29,12 @@ class IRRemote:
         self.pin = pin
         self.ir_code_file = ir_code_file
         self.controller = controller  # Use the shared RGBController instance
-        self.controller.current_color_index = 0  # Track the current color index
-        self.last_button_pressed = None  # Store the last button pressed
         GPIO.setmode(GPIO.BCM)  # Use BCM pin numbering
         GPIO.setup(self.pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)  # Set GPIO pin as input with pull-down resistor
         self.ir_codes = self.load_ir_codes()
         self.pi = pigpio.pi()
         self.ir_receiver = rx(self.pi, self.pin, self.ir_rx_callback, track=False, log=False)
         self.notifier = PushsaferNotification(private_key)  # Replace with your actual private key
-        self.current_pattern_process = None  # Track the current pattern process
 
     def load_ir_codes(self):
         """
@@ -70,19 +66,9 @@ class IRRemote:
             key = find_key(self.ir_codes, ir_hex)
             if key:
                 print(f"Button pressed: {key}")
-                self.last_button_pressed = key  # Update the last button pressed
                 self.handle_ir_command(key)
             else:
                 print("Unknown IR code received.")
-
-    def get_last_button_pressed(self):
-        """
-        Get the last button pressed.
-
-        Returns:
-            str: The last button pressed.
-        """
-        return self.last_button_pressed
 
     def handle_ir_command(self, key):
         """
@@ -92,25 +78,25 @@ class IRRemote:
             key (str): The button key corresponding to the IR command.
         """
         commands = {
-            '0': self.command_0,
-            '1': self.command_1,
-            '2': self.command_2,
-            '3': self.command_3,
-            '4': self.command_4,
-            '5': self.command_5,
-            '6': self.command_6,
-            '7': self.command_7,
-            '8': self.command_8,
-            '9': self.command_9,
-            '-': self.command_minus,
-            '+': self.command_plus,
-            'EQ': self.command_eq,
-            '<': self.command_left,
-            '>': self.command_right,
-            '>||': self.command_play_pause,
-            'CH+': self.command_channel_up,
-            'CH': self.command_channel,
-            'CH-': self.command_channel_down
+            '0': self.controller.clear_strip,
+            '1': lambda: self.controller.activate_static_color(),
+            '2': lambda: self.controller.activate_rainbow(),
+            '3': lambda: self.controller.activate_theater_chase(),
+            # '4': self.command_4,
+            # '5': self.command_5,
+            # '6': self.command_6,
+            # '7': self.command_7,
+            # '8': self.command_8,
+            # '9': self.command_9,
+            '-': lambda: self.controller.adjust_brightness(-25),
+            '+': lambda: self.controller.adjust_brightness(25),
+            '<': lambda: self.controller.adjust_speed(10),
+            '>': lambda: self.controller.adjust_speed(-10),
+            'CH+': lambda: self.controller.cycle_next_color(),
+            'CH-': lambda: self.controller.cycle_previous_color(),
+            # 'CH': self.command_channel,
+            # 'EQ': self.command_eq,
+            # '>||': self.command_play_pause,
         }
 
         command = commands.get(key)
@@ -118,150 +104,6 @@ class IRRemote:
             command()
         else:
             print(f"Unknown command for key: {key}")
-
-    def read_ir_code(self):
-        """
-        Print a message indicating that the system is waiting for an IR signal and keep the script running.
-        """
-        print("Waiting for IR code...")
-        while True:
-            time.sleep(1)  # Keep the script running to receive IR signals
-
-    # Command implementations
-    def command_0(self):
-        print("Command 0: Clearing the lights...")
-        self.controller.clear_strip()
-
-    def command_1(self):
-        print("Command 1 executed")
-
-    def command_2(self):
-        print("Command 2 executed")
-
-    def command_3(self):
-        print("Command 3 executed")
-
-    def command_4(self):
-        print("Command 4 executed")
-
-    def command_5(self):
-        print("Command 5 executed")
-
-    def command_6(self):
-        print("Command 6 executed")
-
-    def command_7(self):
-        print("Command 7 executed")
-
-    def command_8(self):
-        print("Command 8 executed")
-
-    def command_9(self):
-        print("Command 9 executed")
-
-    def command_minus(self):
-        print("Command -: Decreasing brightness...")
-        new_brightness = max(self.controller.brightness - 25, 0)
-        self.controller.set_brightness(new_brightness)
-
-    def command_plus(self):
-        print("Command +: Increasing brightness...")
-        new_brightness = min(self.controller.brightness + 25, 255)
-        self.controller.set_brightness(new_brightness)
-
-    def command_eq(self):
-        print("Command EQ executed")
-
-    def command_left(self):
-        print("Command <: Decreasing speed...")
-        self.controller.speed = self.controller.speed + 10
-        print(f"Speed set to {self.controller.speed} ms.")
-
-    def command_right(self):
-        print("Command >: Increasing speed...")
-        self.controller.speed = max(1, self.controller.speed - 10)
-        print(f"Speed set to {self.controller.speed} ms.")
-
-    def command_play_pause(self):
-        self.notifier.send_notification(
-            message="You Left Your Lights On",
-            title="PiLite",
-            icon="24",
-            sound="10",
-            vibration="1",
-            picture=""
-        )
-        print("Command >|| executed and notification sent")
-
-    def command_channel_up(self):
-        print("Command CH+: Cycling clockwise through colors...")
-        colors, color_names = self.controller.get_color_options()
-        self.controller.current_color_index = (self.controller.current_color_index + 1) % len(colors)
-        self.controller.color_wipe(colors[self.controller.current_color_index])
-        print(f"Color changed to {color_names[self.controller.current_color_index]}.")
-
-    def command_channel(self):
-        """
-        Command CH: Cycle through patterns.
-        """
-        print("Command CH: Cycling through patterns...")
-        patterns = ["static_color", "rainbow", "theater_chase"]
-        current_index = patterns.index(self.controller.current_pattern) if self.controller.current_pattern in patterns else -1
-        next_index = (current_index + 1) % len(patterns)
-
-        # Clear the current pattern
-        self.controller.clear_strip()
-        self.controller.current_pattern = None  # Reset the current pattern
-
-        # Switch to the next pattern
-        self.controller.current_pattern = patterns[next_index]
-
-        if self.controller.current_pattern == "static_color":
-            print("Switching to Static Color...")
-            self.start_pattern_process(self.controller.color_wipe(Color(255, 0, 0)))  # Default to red
-        elif self.controller.current_pattern == "rainbow":
-            print("Switching to Rainbow...")
-            self.start_pattern_process(self.controller.rainbow)  # Start rainbow in a new process
-        elif self.controller.current_pattern == "theater_chase":
-            print("Switching to Theater Chase...")
-            self.start_pattern_process(self.controller.theater_chase, Color(255, 255, 0))  # Start theater chase in a new process
-
-    def command_channel_down(self):
-        print("Command CH-: Cycling counterclockwise through colors...")
-        colors, color_names = self.controller.get_color_options()
-        self.controller.current_color_index = (self.controller.current_color_index - 1) % len(colors)
-        self.controller.color_wipe(colors[self.controller.current_color_index])
-        print(f"Color changed to {color_names[self.controller.current_color_index]}.")
-
-    def stop_current_pattern(self):
-        """
-        Stop the currently running pattern process, if any.
-        """
-        if self.current_pattern_process and self.current_pattern_process.is_alive():
-            print("Stopping the current pattern...")
-            self.current_pattern_process.terminate()
-            self.current_pattern_process.join()
-            self.current_pattern_process = None
-            print("Current pattern stopped.")
-
-    def start_pattern_process(self, target, *args):
-        """
-        Start a new process for the given pattern target function.
-        """
-        self.stop_current_pattern()  # Stop any running pattern process
-        if self.controller.current_pattern != "static_color":
-            self.current_pattern_process = multiprocessing.Process(target=target, args=args)
-            self.current_pattern_process.start()
-
-    def cleanup(self):
-        """
-        Cleanup function to stop any running pattern processes and release resources.
-        """
-        print("Cleaning up IRRemote...")
-        self.stop_current_pattern()  # Stop any running pattern process
-        if self.pi.connected:
-            self.pi.stop()  # Disconnect from pigpio
-        print("IRRemote cleanup completed.")
 
 def main():
     """
