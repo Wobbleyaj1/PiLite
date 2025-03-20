@@ -3,34 +3,32 @@ import time
 import os
 import pigpio
 import sys
+import multiprocessing
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from IR.ir_helper import parse_ir_to_dict, find_key, rx
 from Mobile_Notifications.pushsafer import PushsaferNotification
+from RGB_Strips.rgb_controller import RGBController
 
 class IRRemote:
     """
     A class to represent an IR remote control.
-
-    Attributes:
-        pin (int): The GPIO pin number for the IR receiver.
-        ir_code_file (str): The file path to the IR code dictionary.
-        ir_codes (dict): The dictionary of IR codes.
-        pi (pigpio.pi): The pigpio instance.
-        ir_receiver (rx): The IR receiver instance.
     """
 
-    def __init__(self, pin, ir_code_file, private_key):
+    def __init__(self, pin, ir_code_file, private_key, controller):
         """
         Initialize the IRRemote class.
 
         Args:
             pin (int): The GPIO pin number for the IR receiver.
             ir_code_file (str): The file path to the IR code dictionary.
+            private_key (str): The private key for Pushsafer notifications.
+            controller (RGBController): The shared RGBController instance.
         """
         self.pin = pin
         self.ir_code_file = ir_code_file
+        self.controller = controller  # Use the shared RGBController instance
         GPIO.setmode(GPIO.BCM)  # Use BCM pin numbering
         GPIO.setup(self.pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)  # Set GPIO pin as input with pull-down resistor
         self.ir_codes = self.load_ir_codes()
@@ -62,7 +60,7 @@ class IRRemote:
             ir_hex (str): Hexadecimal representation of the IR signal.
             model (str): IR remote model.
             log (bool): Whether to log the signal.
-            config_folder (str): Path to the configuration folder.S
+            config_folder (str): Path to the configuration folder.
         """
         if valid:
             key = find_key(self.ir_codes, ir_hex)
@@ -80,25 +78,25 @@ class IRRemote:
             key (str): The button key corresponding to the IR command.
         """
         commands = {
-            '0': self.command_0,
-            '1': self.command_1,
-            '2': self.command_2,
-            '3': self.command_3,
-            '4': self.command_4,
-            '5': self.command_5,
-            '6': self.command_6,
-            '7': self.command_7,
-            '8': self.command_8,
-            '9': self.command_9,
-            '-': self.command_minus,
-            '+': self.command_plus,
-            'EQ': self.command_eq,
-            '<': self.command_left,
-            '>': self.command_right,
-            '>||': self.command_play_pause,
-            'CH+': self.command_channel_up,
-            'CH': self.command_channel,
-            'CH-': self.command_channel_down
+            '0': self.controller.clear_strip,
+            '1': lambda: self.controller.activate_static_color(),
+            '2': lambda: self.controller.activate_rainbow(),
+            '3': lambda: self.controller.activate_theater_chase(),
+            # '4': self.command_4,
+            # '5': self.command_5,
+            # '6': self.command_6,
+            # '7': self.command_7,
+            # '8': self.command_8,
+            # '9': self.command_9,
+            '-': lambda: self.controller.adjust_brightness(-25),
+            '+': lambda: self.controller.adjust_brightness(25),
+            '<': lambda: self.controller.adjust_speed(10),
+            '>': lambda: self.controller.adjust_speed(-10),
+            'CH+': lambda: self.controller.cycle_next_color(),
+            'CH-': lambda: self.controller.cycle_previous_color(),
+            # 'CH': self.command_channel,
+            # 'EQ': self.command_eq,
+            # '>||': self.command_play_pause,
         }
 
         command = commands.get(key)
@@ -106,71 +104,6 @@ class IRRemote:
             command()
         else:
             print(f"Unknown command for key: {key}")
-    
-    def command_0(self):
-        self.notifier.send_notification(
-            message="You Left Your Lights On",  # The message text
-            title="PiLite",                     # The title of the message
-            icon="24",                          # The icon number
-            sound="10",                         # The sound number
-            vibration="1",                      # The vibration number
-            picture=""                          # The picture data URL (optional)
-        )
-        print("Command 0 executed and notification sent")
-
-    def command_1(self):
-        print("Command 1 executed")
-
-    def command_2(self):
-        print("Command 2 executed")
-
-    def command_3(self):
-        print("Command 3 executed")
-
-    def command_4(self):
-        print("Command 4 executed")
-
-    def command_5(self):
-        print("Command 5 executed")
-
-    def command_6(self):
-        print("Command 6 executed")
-
-    def command_7(self):
-        print("Command 7 executed")
-
-    def command_8(self):
-        print("Command 8 executed")
-
-    def command_9(self):
-        print("Command 9 executed")
-
-    def command_minus(self):
-        print("Command - executed")
-
-    def command_plus(self):
-        print("Command + executed")
-
-    def command_eq(self):
-        print("Command EQ executed")
-
-    def command_left(self):
-        print("Command < executed")
-
-    def command_right(self):
-        print("Command > executed")
-
-    def command_play_pause(self):
-        print("Command >|| executed")
-
-    def command_channel_up(self):
-        print("Command CH+ executed")
-
-    def command_channel(self):
-        print("Command CH executed")
-
-    def command_channel_down(self):
-        print("Command CH- executed")
 
     def read_ir_code(self):
         """
@@ -184,7 +117,8 @@ def main():
     """
     Main function to create an IRRemote instance and start reading IR codes.
     """
-    ir_remote = IRRemote(pin=17, ir_code_file="config/ir_code_ff.txt")
+    controller = RGBController()  # Create a shared RGBController instance
+    ir_remote = IRRemote(pin=17, ir_code_file="config/ir_code_ff.txt", private_key="your_private_key_here", controller=controller)
     ir_remote.read_ir_code()
 
 if __name__ == "__main__":

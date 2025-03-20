@@ -1,3 +1,4 @@
 RPi.GPIO
 pigpio==1.78
 python-dotenv
+rpi_ws281x

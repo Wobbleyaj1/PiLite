@@ -1,0 +1,3 @@
+Set the script to run on boot
+
+Disable audio
