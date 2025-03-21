@@ -12,9 +12,13 @@ class RGBController:
         self.speed = 50
         self.current_color_index = 0
         self.pattern_thread = None
+        self.last_change_time = time.time()  # Track the last change time
         self.activate_static_color()
 
-    
+    def update_last_change_time(self):
+        """Update the last change time to the current time."""
+        self.last_change_time = time.time()
+
     def stop_current_pattern(self):
         """
         Stop the currently running pattern by resetting the current_pattern
@@ -36,26 +40,31 @@ class RGBController:
         self.max_brightness = max(0, min(255, self.max_brightness + delta))
         self.strip.setBrightness(self.max_brightness)
         self.strip.show()
+        self.update_last_change_time()  # Update last change time
 
     def adjust_brightness(self, delta):
         self.brightness = max(0, min(self.max_brightness, self.brightness + delta))
         self.strip.setBrightness(self.brightness)
         self.strip.show()
+        self.update_last_change_time()  # Update last change time
 
     def adjust_speed(self, delta):
         self.speed = max(1, self.speed + delta)
+        self.update_last_change_time()  # Update last change time
 
     def activate_static_color(self):
         self.clear_strip()
         self.current_pattern = "static_color"
         colors, color_names = self.get_color_options()
         self.color_wipe(colors[self.current_color_index])
+        self.update_last_change_time()  # Update last change time
         print(f"Static Color activated: {color_names[self.current_color_index]}.")
 
     def activate_rainbow(self):
         self.clear_strip()
         self.current_pattern = "rainbow"
         threading.Thread(target=self.rainbow, daemon=True).start()
+        self.update_last_change_time()  # Update last change time
         print("Rainbow pattern activated.")
 
     def activate_theater_chase(self):
@@ -65,18 +74,21 @@ class RGBController:
         threading.Thread(
             target=self.theater_chase, args=(colors[self.current_color_index],), daemon=True
         ).start()
+        self.update_last_change_time()  # Update last change time
         print(f"Theater Chase pattern activated with color: {color_names[self.current_color_index]}.")
 
     def cycle_next_color(self):
         colors, color_names = self.get_color_options()
         self.current_color_index = (self.current_color_index + 1) % len(colors)
         self.color_wipe(colors[self.current_color_index])
+        self.update_last_change_time()  # Update last change time
         print(f"Color changed to {color_names[self.current_color_index]}.")
 
     def cycle_previous_color(self):
         colors, color_names = self.get_color_options()
         self.current_color_index = (self.current_color_index - 1) % len(colors)
         self.color_wipe(colors[self.current_color_index])
+        self.update_last_change_time()  # Update last change time
         print(f"Color changed to {color_names[self.current_color_index]}.")
 
     def color_wipe(self, color):

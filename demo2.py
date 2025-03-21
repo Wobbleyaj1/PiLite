@@ -54,31 +54,15 @@ def main():
         sys.exit(1)
 
     try:
-        lights_on_start_time = None  # Track when the LEDs were turned on
         low_power_mode = False  # Track if the system is in low-power mode
 
         while True:
             try:
                 distance = ultrasonic_sensor.get_distance()
 
-                if low_power_mode:
-                    # Exit low-power mode if the distance increases
-                    if distance > 5:
-                        print("Exiting low-power mode...")
-                        low_power_mode = False
-                        # Reinitialize peripherals
-                        ir_remote.initialize()  # Reinitialize the IR sensor
-                        controller.set_max_brightness(controller.max_brightness)  # Restore LED brightness
-                        lights_on_start_time = time.time()  # Reset the lights-on timer
-                        continue
+                # Check for inactivity (10 minutes = 600 seconds)
+                if not low_power_mode and time.time() - controller.last_change_time > 600:
 
-                # Turn on LEDs if they are off
-                if lights_on_start_time is None:
-                    lights_on_start_time = time.time()  # Start the timer
-                    controller.adjust_brightness(controller.max_brightness)  # Turn on LEDs
-
-                # Check if LEDs have been on for over a minute
-                elif time.time() - lights_on_start_time > 60:
                     # Send a notification using Pushsafer
                     pushsafer_notifier.send_notification(
                         message="The lights have been on for over a minute! Entering Low-Power Mode.",
@@ -88,14 +72,19 @@ def main():
                         vibration="1",  # Example vibration setting
                         picture=""  # Optional: Add a picture URL or leave empty
                     )
-                    print("Notification sent. Entering low-power mode...")
-
-                    # Enter low-power mode
+                    
                     low_power_mode = True
-                    lights_on_start_time = None  # Reset the timer
                     controller.set_max_brightness(0)
-                    controller.clear_strip()  # Turn off LEDs
-                    continue  # Skip the rest of the loop while in low-power mode
+                    controller.clear_strip()
+                    continue
+
+                if low_power_mode:
+                    # Exit low-power mode if the distance increases
+                    if distance > 5:
+                        print("Exiting low-power mode...")
+                        low_power_mode = False
+                        controller.set_max_brightness(controller.max_brightness)  # Restore LED brightness
+                        continue
 
                 # Adjust brightness dynamically based on distance
                 if distance <= 5:
