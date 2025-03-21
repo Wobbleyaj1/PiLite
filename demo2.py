@@ -50,22 +50,22 @@ def main():
 
     try:
         while True:
-            # Handle IR remote functionality
-            #ir_remote.read_ir_code()
-
             # Handle ultrasonic sensor functionality
             try:
                 distance = ultrasonic_sensor.get_distance()
                 if distance <= 10:
-                    brightness = 0  # 0% of maximum brightness
+                    target_brightness = 0  # 0% of maximum brightness
                 elif distance >= 100:
-                    brightness = controller.max_brightness  # 100% of maximum brightness
+                    target_brightness = controller.max_brightness  # 100% of maximum brightness
                 else:
                     # Scale brightness linearly between 10cm and 100cm
-                    brightness = int((distance - 10) / 90 * controller.max_brightness)
+                    target_brightness = int((distance - 10) / 90 * controller.max_brightness)
 
-                controller.adjust_brightness(brightness - controller.brightness)
-                print(f"Distance: {distance:.2f} cm, Brightness: {brightness}")
+                # Gradually adjust brightness to the target value
+                step = 1 if target_brightness > controller.brightness else -1
+                for brightness in range(controller.brightness, target_brightness, step):
+                    controller.adjust_brightness(step)
+                    time.sleep(0.01) 
             except RuntimeError as e:
                 print(f"Error reading distance: {e}")
             # Add a small delay to prevent excessive CPU usage
