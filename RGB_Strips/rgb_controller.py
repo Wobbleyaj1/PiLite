@@ -7,7 +7,7 @@ class RGBController:
         self.strip = PixelStrip(led_count, led_pin, led_freq_hz, led_dma, led_invert, led_brightness, led_channel)
         self.strip.begin()
         self.current_pattern = None
-        self.max_brightness = 255
+        self.max_brightness = led_brightness
         self.brightness = led_brightness
         self.speed = 50
         self.current_color_index = 0
@@ -32,7 +32,7 @@ class RGBController:
         print("LEDs cleared.")
 
     def set_max_brightness(self, delta):
-        self.max_brightness = max(0, min(255, self.brightness + delta))
+        self.max_brightness = max(0, min(255, self.max_brightness + delta))
         self.strip.setBrightness(self.max_brightness)
         self.strip.show()
         print(f"Brightness adjusted to {self.max_brightness}.")
