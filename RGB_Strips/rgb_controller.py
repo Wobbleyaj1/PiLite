@@ -127,13 +127,13 @@ class RGBController:
 
     def get_color_options(self):
         colors = [
+            Color(255, 255, 255),  # White
             Color(255, 0, 0),  # Red
             Color(0, 255, 0),  # Green
             Color(0, 0, 255),  # Blue
             Color(255, 255, 0),  # Yellow
             Color(0, 255, 255),  # Cyan
             Color(255, 0, 255),  # Magenta
-            Color(255, 255, 255),  # White
         ]
-        color_names = ["Red", "Green", "Blue", "Yellow", "Cyan", "Magenta", "White"]
+        color_names = ["White", "Red", "Green", "Blue", "Yellow", "Cyan", "Magenta"]
         return colors, color_names
