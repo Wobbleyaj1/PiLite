@@ -55,15 +55,26 @@ def main():
 
     try:
         low_distance_start_time = None  # Track when the distance is <= 5
+        low_power_mode = False  # Track if the system is in low-power mode
 
         while True:
-            # Handle ultrasonic sensor functionality
             try:
                 distance = ultrasonic_sensor.get_distance()
+
+                if low_power_mode:
+                    # Exit low-power mode if the distance increases
+                    if distance > 5:
+                        print("Exiting low-power mode...")
+                        low_power_mode = False
+                        # Reinitialize peripherals
+                        ir_remote.initialize()  # Reinitialize the IR sensor
+                        controller.set_brightness(controller.max_brightness)  # Restore LED brightness
+                        continue
+
                 if distance <= 5:
                     if low_distance_start_time is None:
                         low_distance_start_time = time.time()  # Start the timer
-                    elif time.time() - low_distance_start_time > 180:  # 3 minutes
+                    elif time.time() - low_distance_start_time > 60:
                         # Send a notification using Pushsafer
                         pushsafer_notifier.send_notification(
                             message="The distance has been <= 5cm for over 3 minutes!",
@@ -73,16 +84,14 @@ def main():
                             vibration="1",  # Example vibration setting
                             picture=""  # Optional: Add a picture URL or leave empty
                         )
-                        print("Notification sent. Shutting down the system...")
+                        print("Notification sent. Entering low-power mode...")
 
-                        # Perform cleanup before shutting down
-                        controller.clear_strip()  # Clear the LEDs
-                        ultrasonic_sensor.cleanup()  # Cleanup GPIO for ultrasonic sensor
-                        cleanup()  # Cleanup for pigpiod and other resources
-
-                        # Shut down the Raspberry Pi
-                        os.system("sudo shutdown now")
-                        sys.exit(0)  # Exit the program explicitly
+                        # Enter low-power mode
+                        low_power_mode = True
+                        low_distance_start_time = None  # Reset the timer
+                        controller.clear_strip()  # Turn off LEDs
+                        ir_remote.cleanup()  # Disable the IR sensor
+                        continue  # Skip the rest of the loop while in low-power mode
                 else:
                     low_distance_start_time = None  # Reset the timer if distance is > 5
 
