@@ -60,7 +60,7 @@ def main():
                 print(f"Distance: {distance} cm")
 
                 # Check for inactivity (10 minutes = 600 seconds)
-                if controller.last_change_time is not None and time.time() - controller.last_change_time > 600:
+                if controller.last_change_time is not None and time.time() - controller.last_change_time > 30:
 
                     # Send a notification using Pushsafer
                     pushsafer_notifier.send_notification(
