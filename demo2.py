@@ -68,9 +68,8 @@ def main():
                 print(f"Distance: {distance:.2f} cm, Brightness: {brightness}")
             except RuntimeError as e:
                 print(f"Error reading distance: {e}")
-
             # Add a small delay to prevent excessive CPU usage
-            time.sleep(1)
+            time.sleep(0.1)
 
     except KeyboardInterrupt:
         # Signal handler will handle cleanup
