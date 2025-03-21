@@ -36,6 +36,24 @@ class HCSR04:
         
         return distance
     
+    def calculate_brightness(self, distance, max_brightness):
+        """
+        Calculate the target brightness based on the distance.
+
+        Parameters:
+        distance (float): The measured distance in cm.
+        max_brightness (int): The maximum brightness value.
+
+        Returns:
+        int: The calculated brightness value.
+        """
+        if distance <= 5:
+            return 0
+        elif distance >= 100:
+            return max_brightness
+        else:
+            return int((distance - 10) / 90 * max_brightness)
+    
     def cleanup(self):
         GPIO.cleanup()
 

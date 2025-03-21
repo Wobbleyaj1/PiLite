@@ -52,6 +52,19 @@ class RGBController:
         else:
             self.update_last_change_time()  # Update last change time
 
+    def adjust_to_target_brightness(self, target_brightness, step_delay=0.01):
+        """
+        Gradually adjust the brightness to the target value.
+
+        Parameters:
+        target_brightness (int): The desired brightness level.
+        step_delay (float): The delay between each brightness adjustment step.
+        """
+        step = 1 if target_brightness > self.brightness else -1
+        for brightness in range(self.brightness, target_brightness, step):
+            self.adjust_brightness(step)
+            time.sleep(step_delay)
+
     def adjust_speed(self, delta):
         self.speed = max(1, self.speed + delta)
         self.update_last_change_time()  # Update last change time

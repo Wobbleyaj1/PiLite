@@ -62,6 +62,19 @@ class PushsaferNotification:
         else:
             print("Notification not sent due to delay")
 
+    def send_trunk_open_notification(self):
+        """
+        Sends a notification indicating that the trunk was left open.
+        """
+        self.send_notification(
+            message="Trunk was left open.",
+            title="PiLite Alert",
+            icon="24",
+            sound="10",
+            vibration="1",
+            picture=""
+        )
+
 # Example usage:
 if __name__ == "__main__":
     notifier = PushsaferNotification(private_key='Private Key')  # Replace with your actual private key
