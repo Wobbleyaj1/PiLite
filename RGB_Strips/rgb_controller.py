@@ -35,7 +35,6 @@ class RGBController:
         self.max_brightness = max(0, min(255, self.max_brightness + delta))
         self.strip.setBrightness(self.max_brightness)
         self.strip.show()
-        print(f"Brightness adjusted to {self.max_brightness}.")
 
     def adjust_brightness(self, delta):
         self.brightness = max(0, min(self.max_brightness, self.brightness + delta))
