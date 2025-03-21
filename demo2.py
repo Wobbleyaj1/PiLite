@@ -54,7 +54,7 @@ def main():
         sys.exit(1)
 
     try:
-        low_distance_start_time = None  # Track when the distance is <= 5
+        lights_on_start_time = None  # Track when the LEDs were turned on
         low_power_mode = False  # Track if the system is in low-power mode
 
         while True:
@@ -69,15 +69,20 @@ def main():
                         # Reinitialize peripherals
                         ir_remote.initialize()  # Reinitialize the IR sensor
                         controller.set_brightness(controller.max_brightness)  # Restore LED brightness
+                        lights_on_start_time = time.time()  # Reset the lights-on timer
                         continue
 
                 if distance <= 5:
-                    if low_distance_start_time is None:
-                        low_distance_start_time = time.time()  # Start the timer
-                    elif time.time() - low_distance_start_time > 60:
+                    # Turn on LEDs if they are off
+                    if lights_on_start_time is None:
+                        lights_on_start_time = time.time()  # Start the timer
+                        controller.set_brightness(controller.max_brightness)  # Turn on LEDs
+
+                    # Check if LEDs have been on for over a minute
+                    elif time.time() - lights_on_start_time > 60:
                         # Send a notification using Pushsafer
                         pushsafer_notifier.send_notification(
-                            message="Pi was left on! Entering Low-Power Mode.",
+                            message="Lights Left On!",
                             title="PiLite Alert",
                             icon="24",  # Example icon number
                             sound="10",  # Example sound number
@@ -88,11 +93,15 @@ def main():
 
                         # Enter low-power mode
                         low_power_mode = True
-                        low_distance_start_time = None  # Reset the timer
+                        lights_on_start_time = None  # Reset the timer
                         controller.clear_strip()  # Turn off LEDs
+                        ir_remote.cleanup()  # Disable the IR sensor
                         continue  # Skip the rest of the loop while in low-power mode
                 else:
-                    low_distance_start_time = None  # Reset the timer if distance is > 5
+                    # Turn off LEDs if the distance is greater than 5
+                    if lights_on_start_time is not None:
+                        lights_on_start_time = None  # Reset the timer
+                        controller.clear_strip()  # Turn off LEDs
 
                 if distance <= 5:
                     target_brightness = 0  # 0% of maximum brightness
