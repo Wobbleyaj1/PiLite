@@ -59,7 +59,7 @@ def main():
                 distance = ultrasonic_sensor.get_distance()
 
                 # Check for inactivity (10 minutes = 600 seconds)
-                if ultrasonic_sensor.get_distance <= 5 and time.time() - controller.last_change_time > 30:
+                if distance <= 5 and time.time() - controller.last_change_time > 30:
 
                     # Send a notification using Pushsafer
                     pushsafer_notifier.send_notification(
