@@ -75,7 +75,7 @@ def main():
                 # Turn on LEDs if they are off
                 if lights_on_start_time is None:
                     lights_on_start_time = time.time()  # Start the timer
-                    controller.set_brightness(controller.max_brightness)  # Turn on LEDs
+                    controller.adjust_brightness(controller.max_brightness)  # Turn on LEDs
 
                 # Check if LEDs have been on for over a minute
                 elif time.time() - lights_on_start_time > 60:
