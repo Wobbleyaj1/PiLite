@@ -5,7 +5,6 @@ from Ultrasonic_Sensor.ultrasonic import HCSR04
 import time
 import signal
 import sys
-import threading
 from startup import create_and_activate_venv, start_pigpiod, load_environment_variables, cleanup
 
 # Create and activate virtual environment
@@ -41,43 +40,38 @@ def signal_handler(sig, frame):
 
 signal.signal(signal.SIGINT, signal_handler)
 
-def adjust_brightness_based_on_distance():
-    """
-    Adjust the brightness of the LED strip based on the distance measured by the ultrasonic sensor.
-    """
-    while True:
-        try:
-            distance = ultrasonic_sensor.get_distance()
-            if distance <= 10:
-                brightness = 0  # 0% of maximum brightness
-            elif distance >= 100:
-                brightness = controller.max_brightness  # 100% of maximum brightness
-            else:
-                # Scale brightness linearly between 10cm and 100cm
-                brightness = int((distance - 10) / 90 * controller.max_brightness)
-
-            controller.adjust_brightness(brightness - controller.brightness)
-            print(f"Distance: {distance:.2f} cm, Brightness: {brightness}")
-            time.sleep(0.1)  # Adjust brightness every 100ms
-        except RuntimeError as e:
-            print(f"Error reading distance: {e}")
-            time.sleep(0.1)
-
 def main():
     """
-    Main function to run the IRRemote functionality and ultrasonic sensor.
+    Main function to handle both IRRemote and ultrasonic sensor functionality in a single loop.
     """
     if not ir_remote.pi.connected:
         print("Failed to connect to pigpiod. Exiting.")
         sys.exit(1)
 
-    # Run IRRemote in a separate thread
-    ir_thread = threading.Thread(target=ir_remote.read_ir_code, daemon=True)
-    ir_thread.start()
-
-    # Run ultrasonic sensor in the main thread
     try:
-        adjust_brightness_based_on_distance()
+        while True:
+            # Handle IR remote functionality
+            ir_remote.read_ir_code()
+
+            # Handle ultrasonic sensor functionality
+            try:
+                distance = ultrasonic_sensor.get_distance()
+                if distance <= 10:
+                    brightness = 0  # 0% of maximum brightness
+                elif distance >= 100:
+                    brightness = controller.max_brightness  # 100% of maximum brightness
+                else:
+                    # Scale brightness linearly between 10cm and 100cm
+                    brightness = int((distance - 10) / 90 * controller.max_brightness)
+
+                controller.adjust_brightness(brightness - controller.brightness)
+                print(f"Distance: {distance:.2f} cm, Brightness: {brightness}")
+            except RuntimeError as e:
+                print(f"Error reading distance: {e}")
+
+            # Add a small delay to prevent excessive CPU usage
+            time.sleep(0.1)
+
     except KeyboardInterrupt:
         # Signal handler will handle cleanup
         pass
