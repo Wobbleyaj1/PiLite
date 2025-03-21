@@ -66,11 +66,12 @@ def main():
 
                 controller.adjust_brightness(brightness - controller.brightness)
                 print(f"Distance: {distance:.2f} cm, Brightness: {brightness}")
+                time.sleep(1)  # Delay to prevent rapid changes
             except RuntimeError as e:
                 print(f"Error reading distance: {e}")
 
             # Add a small delay to prevent excessive CPU usage
-            time.sleep(0.1)
+            time.sleep(1)
 
     except KeyboardInterrupt:
         # Signal handler will handle cleanup
