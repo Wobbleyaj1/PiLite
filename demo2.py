@@ -57,7 +57,6 @@ def main():
         while True:
             try:
                 distance = ultrasonic_sensor.get_distance()
-                print(f"Distance: {distance} cm")
 
                 # Check for inactivity (10 minutes = 600 seconds)
                 if controller.last_change_time is not None and time.time() - controller.last_change_time > 30:
@@ -75,6 +74,7 @@ def main():
                     controller.clear_strip()
                     continue
 
+                print(f"last_change_time: {controller.last_change_time}")
                 if controller.last_change_time is None and distance > 10:
                     controller.activate_static_color()
                     continue
