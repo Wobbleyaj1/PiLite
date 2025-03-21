@@ -65,7 +65,7 @@ def main():
                 step = 1 if target_brightness > controller.brightness else -1
                 for brightness in range(controller.brightness, target_brightness, step):
                     controller.adjust_brightness(step)
-                    time.sleep(0.1) 
+                    time.sleep(0.01) 
             except RuntimeError as e:
                 print(f"Error reading distance: {e}")
             # Add a small delay to prevent excessive CPU usage
