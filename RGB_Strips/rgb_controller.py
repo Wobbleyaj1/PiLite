@@ -40,11 +40,9 @@ class RGBController:
         self.brightness = max(0, min(self.max_brightness, self.brightness + delta))
         self.strip.setBrightness(self.brightness)
         self.strip.show()
-        print(f"Brightness adjusted to {self.brightness}.")
 
     def adjust_speed(self, delta):
         self.speed = max(1, self.speed + delta)
-        print(f"Speed adjusted to {self.speed} ms.")
 
     def activate_static_color(self):
         self.clear_strip()
