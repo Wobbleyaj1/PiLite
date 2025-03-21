@@ -51,7 +51,7 @@ def main():
     try:
         while True:
             # Handle IR remote functionality
-            ir_remote.read_ir_code()
+            #ir_remote.read_ir_code()
 
             # Handle ultrasonic sensor functionality
             try:
