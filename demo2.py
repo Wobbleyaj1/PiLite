@@ -7,6 +7,7 @@ import signal
 import sys
 from startup import create_and_activate_venv, start_pigpiod, load_environment_variables, cleanup
 from Mobile_Notifications.pushsafer import PushsaferNotification  # Import PushsaferNotification class
+import os  # Import os for system commands
 
 # Create and activate virtual environment
 venv_path = "/home/pi/PiLite/venv"
@@ -62,17 +63,26 @@ def main():
                 if distance <= 5:
                     if low_distance_start_time is None:
                         low_distance_start_time = time.time()  # Start the timer
-                    elif time.time() - low_distance_start_time > 20:  # (test) 3 minutes
+                    elif time.time() - low_distance_start_time > 180:  # 3 minutes
                         # Send a notification using Pushsafer
                         pushsafer_notifier.send_notification(
-                            message="You Left Your Pi On",  # The message text
-                            title="PiLite",                     # The title of the message
-                            icon="24",                          # The icon number
-                            sound="10",                         # The sound number
-                            vibration="1",                      # The vibration number
-                            picture=""                          # The picture data URL (optional)
+                            message="The distance has been <= 5cm for over 3 minutes!",
+                            title="PiLite Alert",
+                            icon="24",  # Example icon number
+                            sound="10",  # Example sound number
+                            vibration="1",  # Example vibration setting
+                            picture=""  # Optional: Add a picture URL or leave empty
                         )
-                        low_distance_start_time = None  # Reset the timer after sending notification
+                        print("Notification sent. Shutting down the system...")
+
+                        # Perform cleanup before shutting down
+                        controller.clear_strip()  # Clear the LEDs
+                        ultrasonic_sensor.cleanup()  # Cleanup GPIO for ultrasonic sensor
+                        cleanup()  # Cleanup for pigpiod and other resources
+
+                        # Shut down the Raspberry Pi
+                        os.system("sudo shutdown now")
+                        sys.exit(0)  # Exit the program explicitly
                 else:
                     low_distance_start_time = None  # Reset the timer if distance is > 5
 
