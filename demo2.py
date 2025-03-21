@@ -75,11 +75,6 @@ def main():
                     controller.clear_strip()
                     continue
 
-                print(f"last_change_time: {controller.last_change_time}")
-                if controller.last_change_time is None and distance > 10:
-                    controller.activate_static_color()
-                    continue
-
                 # Adjust brightness dynamically based on distance
                 if distance <= 5:
                     target_brightness = 0  # 0% of maximum brightness
