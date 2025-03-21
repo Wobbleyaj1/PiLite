@@ -61,7 +61,7 @@ def main():
                 distance = ultrasonic_sensor.get_distance()
 
                 # Check for inactivity (10 minutes = 600 seconds)
-                if not low_power_mode and time.time() - controller.last_change_time > 600:
+                if not low_power_mode and time.time() - controller.last_change_time > 30:
 
                     # Send a notification using Pushsafer
                     pushsafer_notifier.send_notification(
@@ -72,7 +72,7 @@ def main():
                         vibration="1",  # Example vibration setting
                         picture=""  # Optional: Add a picture URL or leave empty
                     )
-                    
+
                     low_power_mode = True
                     controller.set_max_brightness(0)
                     controller.clear_strip()
