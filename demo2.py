@@ -72,37 +72,37 @@ def main():
                         lights_on_start_time = time.time()  # Reset the lights-on timer
                         continue
 
-                if distance <= 5:
-                    # Turn on LEDs if they are off
-                    if lights_on_start_time is None:
-                        lights_on_start_time = time.time()  # Start the timer
-                        controller.set_brightness(controller.max_brightness)  # Turn on LEDs
+                # Turn on LEDs if they are off
+                if lights_on_start_time is None:
+                    lights_on_start_time = time.time()  # Start the timer
+                    controller.set_brightness(controller.max_brightness)  # Turn on LEDs
 
-                    # Check if LEDs have been on for over a minute
-                    elif time.time() - lights_on_start_time > 60:
-                        # Send a notification using Pushsafer
-                        pushsafer_notifier.send_notification(
-                            message="Lights Left On!",
-                            title="PiLite Alert",
-                            icon="24",  # Example icon number
-                            sound="10",  # Example sound number
-                            vibration="1",  # Example vibration setting
-                            picture=""  # Optional: Add a picture URL or leave empty
-                        )
-                        print("Notification sent. Entering low-power mode...")
+                # Check if LEDs have been on for over a minute
+                elif time.time() - lights_on_start_time > 60:
+                    # Send a notification using Pushsafer
+                    pushsafer_notifier.send_notification(
+                        message="The lights have been on for over a minute! Entering Low-Power Mode.",
+                        title="PiLite Alert",
+                        icon="24",  # Example icon number
+                        sound="10",  # Example sound number
+                        vibration="1",  # Example vibration setting
+                        picture=""  # Optional: Add a picture URL or leave empty
+                    )
+                    print("Notification sent. Entering low-power mode...")
 
-                        # Enter low-power mode
-                        low_power_mode = True
-                        lights_on_start_time = None  # Reset the timer
-                        controller.clear_strip()  # Turn off LEDs
-                        ir_remote.cleanup()  # Disable the IR sensor
-                        continue  # Skip the rest of the loop while in low-power mode
-                else:
-                    # Turn off LEDs if the distance is greater than 5
-                    if lights_on_start_time is not None:
-                        lights_on_start_time = None  # Reset the timer
-                        controller.clear_strip()  # Turn off LEDs
+                    # Enter low-power mode
+                    low_power_mode = True
+                    lights_on_start_time = None  # Reset the timer
+                    controller.clear_strip()  # Turn off LEDs
+                    ir_remote.cleanup()  # Disable the IR sensor
+                    continue  # Skip the rest of the loop while in low-power mode
 
+                # Turn off LEDs if the distance is greater than 5
+                if distance > 5 and lights_on_start_time is not None:
+                    lights_on_start_time = None  # Reset the timer
+                    controller.clear_strip()  # Turn off LEDs
+
+                # Adjust brightness dynamically based on distance
                 if distance <= 5:
                     target_brightness = 0  # 0% of maximum brightness
                 elif distance >= 100:

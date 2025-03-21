@@ -12,6 +12,7 @@ class RGBController:
         self.speed = 50
         self.current_color_index = 0
         self.pattern_thread = None
+        self.activate_static_color()
 
     
     def stop_current_pattern(self):
