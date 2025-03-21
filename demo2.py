@@ -53,7 +53,7 @@ def main():
             # Handle ultrasonic sensor functionality
             try:
                 distance = ultrasonic_sensor.get_distance()
-                if distance <= 10:
+                if distance <= 5:
                     target_brightness = 0  # 0% of maximum brightness
                 elif distance >= 100:
                     target_brightness = controller.max_brightness  # 100% of maximum brightness
