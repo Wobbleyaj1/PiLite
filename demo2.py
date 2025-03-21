@@ -54,14 +54,12 @@ def main():
         sys.exit(1)
 
     try:
-        low_power_mode = False  # Track if the system is in low-power mode
-
         while True:
             try:
                 distance = ultrasonic_sensor.get_distance()
 
                 # Check for inactivity (10 minutes = 600 seconds)
-                if not low_power_mode and time.time() - controller.last_change_time > 30:
+                if ultrasonic_sensor.get_distance <= 5 and time.time() - controller.last_change_time > 30:
 
                     # Send a notification using Pushsafer
                     pushsafer_notifier.send_notification(
@@ -73,18 +71,12 @@ def main():
                         picture=""  # Optional: Add a picture URL or leave empty
                     )
 
-                    low_power_mode = True
-                    controller.set_max_brightness(0)
                     controller.clear_strip()
                     continue
 
-                if low_power_mode:
-                    # Exit low-power mode if the distance increases
-                    if distance > 5:
-                        print("Exiting low-power mode...")
-                        low_power_mode = False
-                        controller.set_max_brightness(controller.max_brightness)  # Restore LED brightness
-                        continue
+                if distance > 5:
+                    controller.activate_static_color()
+                    continue
 
                 # Adjust brightness dynamically based on distance
                 if distance <= 5:
