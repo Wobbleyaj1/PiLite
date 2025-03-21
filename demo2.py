@@ -62,7 +62,7 @@ def main():
                 if distance <= 5:
                     if low_distance_start_time is None:
                         low_distance_start_time = time.time()  # Start the timer
-                    elif time.time() - low_distance_start_time > 20:  # 3 minutes
+                    elif time.time() - low_distance_start_time > 20:  # (test) 3 minutes
                         # Send a notification using Pushsafer
                         pushsafer_notifier.send_notification(
                             message="You Left Your Pi On",  # The message text
