@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from RGB_Strips.rgb_controller import RGBController
 from IR.remote import IRRemote
+from Ultrasonic_Sensor.ultrasonic import HCSR04
 import time
 import signal
 import sys
@@ -23,6 +24,9 @@ controller = RGBController()
 # Create an instance of IRRemote and pass the shared RGBController instance
 ir_remote = IRRemote(pin=17, ir_code_file="/home/pi/PiLite/config/ir_code_ff.txt", private_key=secret_key, controller=controller)
 
+# Create an instance of the ultrasonic sensor
+ultrasonic_sensor = HCSR04(trigger_pin=23, echo_pin=24)
+
 # Signal handler for graceful shutdown
 def signal_handler(sig, frame):
     """
@@ -31,22 +35,49 @@ def signal_handler(sig, frame):
     """
     print("\nExiting... Cleaning up resources.")
     controller.clear_strip()  # Clear the LEDs
+    ultrasonic_sensor.cleanup()  # Cleanup GPIO for ultrasonic sensor
     cleanup()  # Cleanup for pigpiod and other resources
     sys.exit(0)
 
 signal.signal(signal.SIGINT, signal_handler)
 
+def adjust_brightness_based_on_distance():
+    """
+    Adjust the brightness of the LED strip based on the distance measured by the ultrasonic sensor.
+    """
+    while True:
+        try:
+            distance = ultrasonic_sensor.get_distance()
+            if distance <= 10:
+                brightness = 0  # 0% of maximum brightness
+            elif distance >= 100:
+                brightness = controller.max_brightness  # 100% of maximum brightness
+            else:
+                # Scale brightness linearly between 10cm and 100cm
+                brightness = int((distance - 10) / 90 * controller.max_brightness)
+
+            controller.adjust_brightness(brightness - controller.brightness)
+            print(f"Distance: {distance:.2f} cm, Brightness: {brightness}")
+            time.sleep(0.1)  # Adjust brightness every 100ms
+        except RuntimeError as e:
+            print(f"Error reading distance: {e}")
+            time.sleep(0.1)
+
 def main():
     """
-    Main function to run the IRRemote functionality.
+    Main function to run the IRRemote functionality and ultrasonic sensor.
     """
     if not ir_remote.pi.connected:
         print("Failed to connect to pigpiod. Exiting.")
         sys.exit(1)
 
-    # Run IRRemote in the main thread
+    # Run IRRemote in a separate thread
+    ir_thread = threading.Thread(target=ir_remote.read_ir_code, daemon=True)
+    ir_thread.start()
+
+    # Run ultrasonic sensor in the main thread
     try:
-        ir_remote.read_ir_code()
+        adjust_brightness_based_on_distance()
     except KeyboardInterrupt:
         # Signal handler will handle cleanup
         pass
