@@ -60,11 +60,11 @@ def main():
                 print(f"Distance: {distance} cm")
 
                 # Check for inactivity (10 minutes = 600 seconds)
-                if distance <= 5 and time.time() - controller.last_change_time > 30:
+                if controller.last_change_time is not None and time.time() - controller.last_change_time > 600:
 
                     # Send a notification using Pushsafer
                     pushsafer_notifier.send_notification(
-                        message="The lights have been on for over a minute! Entering Low-Power Mode.",
+                        message="Trunk was left open.",
                         title="PiLite Alert",
                         icon="24",  # Example icon number
                         sound="10",  # Example sound number
@@ -75,7 +75,7 @@ def main():
                     controller.clear_strip()
                     continue
 
-                if controller.last_change_time is None and distance > 5:
+                if controller.last_change_time is None and distance > 10:
                     controller.activate_static_color()
                     continue
 
