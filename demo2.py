@@ -6,6 +6,7 @@ import time
 import signal
 import sys
 from startup import create_and_activate_venv, start_pigpiod, load_environment_variables, cleanup
+from Mobile_Notifications.pushsafer import PushsaferNotification  # Import PushsaferNotification class
 
 # Create and activate virtual environment
 venv_path = "/home/pi/PiLite/venv"
@@ -25,6 +26,9 @@ ir_remote = IRRemote(pin=17, ir_code_file="/home/pi/PiLite/config/ir_code_ff.txt
 
 # Create an instance of the ultrasonic sensor
 ultrasonic_sensor = HCSR04(trigger_pin=23, echo_pin=24)
+
+# Initialize PushsaferNotification with your private key
+pushsafer_notifier = PushsaferNotification(private_key=secret_key)  # Replace with your Pushsafer private key
 
 # Signal handler for graceful shutdown
 def signal_handler(sig, frame):
@@ -49,10 +53,29 @@ def main():
         sys.exit(1)
 
     try:
+        low_distance_start_time = None  # Track when the distance is <= 5
+
         while True:
             # Handle ultrasonic sensor functionality
             try:
                 distance = ultrasonic_sensor.get_distance()
+                if distance <= 5:
+                    if low_distance_start_time is None:
+                        low_distance_start_time = time.time()  # Start the timer
+                    elif time.time() - low_distance_start_time > 180:  # 3 minutes
+                        # Send a notification using Pushsafer
+                        pushsafer_notifier.send_notification(
+                            message="You Left Your Pi On",  # The message text
+                            title="PiLite",                     # The title of the message
+                            icon="24",                          # The icon number
+                            sound="10",                         # The sound number
+                            vibration="1",                      # The vibration number
+                            picture=""                          # The picture data URL (optional)
+                        )
+                        low_distance_start_time = None  # Reset the timer after sending notification
+                else:
+                    low_distance_start_time = None  # Reset the timer if distance is > 5
+
                 if distance <= 5:
                     target_brightness = 0  # 0% of maximum brightness
                 elif distance >= 100:
@@ -65,7 +88,7 @@ def main():
                 step = 1 if target_brightness > controller.brightness else -1
                 for brightness in range(controller.brightness, target_brightness, step):
                     controller.adjust_brightness(step)
-                    time.sleep(0.01) 
+                    time.sleep(0.01)
             except RuntimeError as e:
                 print(f"Error reading distance: {e}")
             # Add a small delay to prevent excessive CPU usage
