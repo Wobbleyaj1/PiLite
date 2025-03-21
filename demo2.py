@@ -77,7 +77,7 @@ def main():
                     elif time.time() - low_distance_start_time > 60:
                         # Send a notification using Pushsafer
                         pushsafer_notifier.send_notification(
-                            message="The distance has been <= 5cm for over 3 minutes!",
+                            message="Pi was left on! Entering Low-Power Mode.",
                             title="PiLite Alert",
                             icon="24",  # Example icon number
                             sound="10",  # Example sound number
@@ -90,7 +90,6 @@ def main():
                         low_power_mode = True
                         low_distance_start_time = None  # Reset the timer
                         controller.clear_strip()  # Turn off LEDs
-                        ir_remote.cleanup()  # Disable the IR sensor
                         continue  # Skip the rest of the loop while in low-power mode
                 else:
                     low_distance_start_time = None  # Reset the timer if distance is > 5
