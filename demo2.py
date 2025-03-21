@@ -62,14 +62,15 @@ def main():
                 if controller.last_change_time is not None and time.time() - controller.last_change_time > 30:
 
                     # Send a notification using Pushsafer
-                    pushsafer_notifier.send_notification(
-                        message="Trunk was left open.",
-                        title="PiLite Alert",
-                        icon="24",  # Example icon number
-                        sound="10",  # Example sound number
-                        vibration="1",  # Example vibration setting
-                        picture=""  # Optional: Add a picture URL or leave empty
-                    )
+                    # pushsafer_notifier.send_notification(
+                    #     message="Trunk was left open.",
+                    #     title="PiLite Alert",
+                    #     icon="24",  # Example icon number
+                    #     sound="10",  # Example sound number
+                    #     vibration="1",  # Example vibration setting
+                    #     picture=""  # Optional: Add a picture URL or leave empty
+                    # )
+                    print("Trunk was left open. Sending notification...")
 
                     controller.clear_strip()
                     continue
