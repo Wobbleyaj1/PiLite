@@ -68,7 +68,7 @@ def main():
                         low_power_mode = False
                         # Reinitialize peripherals
                         ir_remote.initialize()  # Reinitialize the IR sensor
-                        controller.set_brightness(controller.max_brightness)  # Restore LED brightness
+                        controller.set_max_brightness(controller.max_brightness)  # Restore LED brightness
                         lights_on_start_time = time.time()  # Reset the lights-on timer
                         continue
 
@@ -93,14 +93,9 @@ def main():
                     # Enter low-power mode
                     low_power_mode = True
                     lights_on_start_time = None  # Reset the timer
+                    controller.set_max_brightness(0)
                     controller.clear_strip()  # Turn off LEDs
-                    ir_remote.cleanup()  # Disable the IR sensor
                     continue  # Skip the rest of the loop while in low-power mode
-
-                # Turn off LEDs if the distance is greater than 5
-                if distance > 5 and lights_on_start_time is not None:
-                    lights_on_start_time = None  # Reset the timer
-                    controller.clear_strip()  # Turn off LEDs
 
                 # Adjust brightness dynamically based on distance
                 if distance <= 5:
