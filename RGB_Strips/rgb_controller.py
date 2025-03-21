@@ -49,7 +49,8 @@ class RGBController:
         self.strip.show()
         if self.brightness == 0:
             self.last_change_time = None 
-        self.update_last_change_time()  # Update last change time
+        else:
+            self.update_last_change_time()  # Update last change time
 
     def adjust_speed(self, delta):
         self.speed = max(1, self.speed + delta)
