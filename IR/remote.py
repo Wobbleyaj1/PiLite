@@ -96,7 +96,14 @@ class IRRemote:
             'CH-': lambda: self.controller.cycle_previous_color(),
             # 'CH': self.command_channel,
             # 'EQ': self.command_eq,
-            # '>||': self.command_play_pause,
+            '>||': lambda: self.notifier.send_notification(
+                message="Play/Pause button was pressed.",
+                title="IR Remote Notification",
+                icon="1",
+                sound="2",
+                vibration="1",
+                picture=""
+            ),
         }
 
         command = commands.get(key)
